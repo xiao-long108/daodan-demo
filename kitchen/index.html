@@ -110,8 +110,15 @@
   }
   .shop-buy:disabled{background:#C9BFA9;box-shadow:none;color:#fff}
   .shop-buy:active:not(:disabled){transform:translateY(2px);box-shadow:none}
+  #bar{
+    position:absolute;left:0;right:0;top:24%;height:36px;z-index:30;pointer-events:none;
+    background:
+      linear-gradient(180deg,#E9CD9C 0 8px,#C99A5C 8px 12px,#B07E42 12px);
+    box-shadow:0 6px 10px rgba(28,49,34,.35), inset 0 1px 0 rgba(255,255,255,.5);
+    border-top:2px solid #F5E3BD;
+  }
   .cust{
-    position:absolute;transform:translate(-50%,-50%);z-index:38;
+    position:absolute;transform:translate(-50%,-50%);z-index:24;
     display:flex;flex-direction:column;align-items:center;gap:3px;
     cursor:pointer;transition:left .6s ease,top .6s ease,opacity .35s ease;
   }
@@ -636,6 +643,7 @@
       <div class="wall">
         <div class="menuboard" id="menuboard"></div>
       </div>
+      <div id="bar"></div>
       <div class="station" id="serve" data-x="50" data-y="19" style="left:50%;top:19%">
         <div class="st-body"><img class="st-img" src="assets/serve_counter.png" alt=""></div>
       </div>
@@ -987,6 +995,7 @@ function buildDay(){
     el.style.transform=`translate(-50%,-50%) scale(var(--sc))`;
     el.style.zIndex=10+Math.round(y);
   });
+  $('serve').style.zIndex=34; // 出餐口立在柜台前景
 
   // 菜单板（后墙装饰，随当日菜单变化）
   $('menuboard').innerHTML='<b>本日菜单</b>'+D.dishes.map(k=>`<span class="mrow"><img src="${A}${RECIPES[k].img}.png" style="height:16px;vertical-align:middle"><small style="font-size:8px"> ¥${RECIPES[k].price}</small></span>`).join('');
@@ -1144,7 +1153,7 @@ function tick(){
 }
 
 /* ================= 订单 ================= */
-const CUST_SLOTS=[{x:28,y:30},{x:50,y:31},{x:72,y:30},{x:50,y:41}];
+const CUST_SLOTS=[{x:14,y:16},{x:31,y:16},{x:69,y:16},{x:86,y:16}];
 function wantHTML(o){
   return o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')+`¥${o.price}`;
 }

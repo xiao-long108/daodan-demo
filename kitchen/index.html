@@ -110,6 +110,41 @@
   }
   .shop-buy:disabled{background:#C9BFA9;box-shadow:none;color:#fff}
   .shop-buy:active:not(:disabled){transform:translateY(2px);box-shadow:none}
+  .cust{
+    position:absolute;transform:translate(-50%,-50%);z-index:38;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    cursor:pointer;transition:left .6s ease,top .6s ease,opacity .35s ease;
+  }
+  .cust .ring{
+    padding:3px;border-radius:50%;
+    background:conic-gradient(var(--rc,#4C9E6A) calc(var(--p,100)*1%), rgba(255,255,255,.4) 0);
+    box-shadow:0 3px 6px rgba(28,49,34,.35);
+  }
+  .cust .ring img{width:44px;height:44px;border-radius:50%;display:block;border:2px solid #fff}
+  .cust .want{
+    display:flex;align-items:center;gap:3px;
+    background:#fff;border-radius:11px;padding:2px 7px;
+    box-shadow:0 3px 6px rgba(28,49,34,.3);
+    font-size:10.5px;font-weight:900;color:var(--persimmon-deep);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .cust .want img{height:22px}
+  .cust.vip .want{background:linear-gradient(180deg,#FFF3C9,#FFE79A);box-shadow:0 0 0 2px var(--gold),0 3px 6px rgba(28,49,34,.3)}
+  .cust.vip::after{
+    content:"加急×2";position:absolute;top:-9px;right:-10px;
+    background:var(--gold);color:#5C4300;font-size:8.5px;font-weight:900;
+    padding:2px 6px;border-radius:999px;box-shadow:0 2px 3px rgba(0,0,0,.25);
+  }
+  .cust.hurry{--rc:#D25B4A;animation:custShake .5s ease infinite}
+  @keyframes custShake{0%,100%{transform:translate(-50%,-50%) rotate(0)}30%{transform:translate(-50%,-50%) rotate(-3deg)}70%{transform:translate(-50%,-50%) rotate(3deg)}}
+  .cust.gone{opacity:0;pointer-events:none}
+  .flame{
+    position:absolute;left:50%;top:16%;transform:translateX(-50%);
+    font-size:26px;line-height:1;display:none;pointer-events:none;z-index:3;
+    filter:drop-shadow(0 0 6px rgba(240,140,40,.8));
+  }
+  .station.cooking .flame{display:block;animation:flameLick .4s ease-in-out infinite alternate}
+  @keyframes flameLick{from{transform:translateX(-50%) scale(.85)}to{transform:translateX(-50%) scale(1.15) translateY(-3px)}}
   .coinfly{
     position:fixed;width:22px;height:22px;z-index:960;pointer-events:none;
     transition:left .45s cubic-bezier(.3,.7,.4,1),top .45s cubic-bezier(.3,.7,.4,1),transform .45s ease,opacity .45s ease;
@@ -455,8 +490,8 @@
   .ing:active{filter:brightness(.9)}
   .ing .crate-img{width:60px;display:block;filter:drop-shadow(0 5px 5px rgba(28,49,34,.4))}
   .ing .ing-icon{
-    position:absolute;top:-12px;left:50%;transform:translateX(-50%);
-    height:30px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));
+    position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+    height:38px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));z-index:2;
   }
   .ing small{
     margin-top:2px;font-size:8.5px;font-weight:800;letter-spacing:.05em;
@@ -596,21 +631,17 @@
       <div id="daytrack"><div id="dayfill"></div></div>
       <span id="daylabel">90s</span>
     </div>
-    <div id="orders"></div>
     <div id="rushbanner">📢 放学高峰！顶住！</div>
     <div id="kitchen">
       <div class="wall">
         <div class="menuboard" id="menuboard"></div>
-        <div id="queue"></div>
       </div>
-      <div class="mat"></div>
       <div class="station" id="serve" data-x="50" data-y="19" style="left:50%;top:19%">
         <div class="st-body"><img class="st-img" src="assets/serve_counter.png" alt=""></div>
-        <div class="st-hint">拿着菜来交单</div>
       </div>
       <div class="station stove" id="wok0" data-kind="wok" data-x="16" data-y="38" style="left:16%;top:38%">
         <div class="st-label">炒锅 一</div>
-        <div class="st-body"><img class="st-img" src="assets/stove.png" alt=""><div class="wok-items"></div></div>
+        <div class="st-body"><img class="st-img" src="assets/stove.png" alt=""><span class="flame">🔥</span><div class="wok-items"></div></div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
         <div class="steam"><i></i><i></i><i></i></div>
@@ -618,7 +649,7 @@
       </div>
       <div class="station stove" id="wok1" data-kind="wok" data-x="16" data-y="66" style="left:16%;top:66%">
         <div class="st-label">炒锅 二</div>
-        <div class="st-body"><img class="st-img" src="assets/stove.png" alt=""><div class="wok-items"></div></div>
+        <div class="st-body"><img class="st-img" src="assets/stove.png" alt=""><span class="flame">🔥</span><div class="wok-items"></div></div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
         <div class="steam"><i></i><i></i><i></i></div>
@@ -932,7 +963,7 @@ function buildDay(){
   $('hud-name').textContent=D.name;
   $('hud-goal').textContent=`目标 ¥${D.goal}`;
   $('hud-cash').textContent='¥0';
-  $('orders').innerHTML='';
+  document.querySelectorAll('#kitchen .cust').forEach(el=>el.remove());
   renderHand();
   renderWok(G.woks[0]); renderWok(G.woks[1]);
   renderBoard(); renderMachine();
@@ -959,7 +990,6 @@ function buildDay(){
 
   // 菜单板（后墙装饰，随当日菜单变化）
   $('menuboard').innerHTML='<b>本日菜单</b>'+D.dishes.map(k=>`<span class="mrow"><img src="${A}${RECIPES[k].img}.png" style="height:16px;vertical-align:middle"><small style="font-size:8px"> ¥${RECIPES[k].price}</small></span>`).join('');
-  $('queue').innerHTML='';
 
   // 食材筐（沿底边摆开）
   document.querySelectorAll('#kitchen .ing').forEach(el=>el.remove());
@@ -1042,9 +1072,8 @@ function tick(){
   G.orders.forEach(o=>{
     const left=o.deadline-now;
     const p=Math.max(0,left/o.total*100);
-    o.patEl.style.width=p+'%';
+    o.el.style.setProperty('--p',p);
     o.el.classList.toggle('hurry',p<35);
-    if(o.qEl)o.qEl.classList.toggle('hurry',p<35);
     if(left<=0)loseOrder(o);
   });
   // 锅
@@ -1115,8 +1144,14 @@ function tick(){
 }
 
 /* ================= 订单 ================= */
+const CUST_SLOTS=[{x:28,y:30},{x:50,y:31},{x:72,y:30},{x:50,y:41}];
+function wantHTML(o){
+  return o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')+`¥${o.price}`;
+}
 function spawnOrder(){
   const D=DAYS[G.day];
+  const slot=CUST_SLOTS.findIndex((_,i)=>!G.orders.some(o=>o.slot===i));
+  if(slot<0)return;
   const vip=G.day>0&&Math.random()<0.2;
   const combo=!vip&&G.day>0&&Math.random()<0.18;
   let keys=[D.dishes[Math.floor(Math.random()*D.dishes.length)]];
@@ -1129,22 +1164,21 @@ function spawnOrder(){
   const pat=D.patience+(G.buff==='patient'?6000:0);
   const total=pat*(vip?0.65:combo?1.25:1)*(0.9+Math.random()*0.3);
   const face=FACES[Math.floor(Math.random()*FACES.length)];
-  const el=document.createElement('div'); el.className='order'+(vip?' vip':'');
+  const el=document.createElement('div'); el.className='cust'+(vip?' vip':'');
   el.innerHTML=
-    `<span class="cust">${vip?'🌟':`<img src="${A}${face}.png">`}</span>`+
-    `<span class="oe">${keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')}</span>`+
-    `<span class="on">${combo?'两道套餐':RECIPES[keys[0]].name}</span>`+
-    `<span class="op">¥${price}</span><span class="pat"><i></i></span>`;
-  const o={id:++G.orderSeq,keys,vip,combo,price,paid:0,total,deadline:performance.now()+total,el,patEl:el.querySelector('.pat i')};
-  // 后墙排队的客人（带情绪气泡）
-  const q=document.createElement('span'); q.className='queuer';
-  q.innerHTML=`<span class="qwrap"><img src="${A}${face}.png"><img class="qmood" src="${A}emo_angry.png"></span>`;
-  $('queue').appendChild(q); o.qEl=q;
-  if(vip)toast('🌟 加急订单！双倍价，但客人急脾气','warn');
-  else if(combo)toast('🍱 套餐单！两道菜都送到才算完','warn');
+    `<span class="ring"><img src="${A}${face}.png"></span>`+
+    `<span class="want"></span>`;
+  el.style.left='108%';
+  el.style.top=CUST_SLOTS[slot].y+'%';
+  el.style.setProperty('--p',100);
+  const o={id:++G.orderSeq,keys,vip,combo,price,paid:0,total,deadline:performance.now()+total,el,slot};
+  el.querySelector('.want').innerHTML=wantHTML(o);
   el.addEventListener('pointerdown',e=>{e.preventDefault();ac();serveOrder(o);});
-  $('orders').appendChild(el);
+  $('kitchen').appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.left=CUST_SLOTS[slot].x+'%';}));
   G.orders.push(o);
+  if(vip)toast('🌟 加急客人！双倍价，但是个急脾气','warn');
+  else if(combo)toast('🍱 套餐客人！两道菜都送到才算完','warn');
   tone(880,.08,'sine',.07); tone(1100,.1,'sine',.06,.06);
 }
 function serveOrder(o){
@@ -1209,7 +1243,7 @@ function doServe(o){
     const part=RECIPES[dish].price;
     o.paid+=part;
     addCash(part,rect.left+rect.width/2,rect.top+10,`+¥${part} 还差一道！`);
-    o.el.querySelector('.oe').innerHTML=o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('');
+    o.el.querySelector('.want').innerHTML=wantHTML(o);
     sfx.place(); sfx.coin();
   }else{
     const ratio=Math.max(0,(o.deadline-performance.now())/o.total);
@@ -1226,19 +1260,20 @@ function doServe(o){
   setTimeout(()=>updateChefImg(),650);
 }
 function loseOrder(o){
-  removeOrder(o);
+  const r=o.el.getBoundingClientRect();
+  scorePop(r.left+r.width/2,r.top,`<img src="${A}emo_angry.png">`,true);
+  removeOrder(o,'angry');
   G.lost++;
   G.streak=0;
   sfx.angry();
   toast('😡 客人等不及走了！连击中断','warn');
 }
-function removeOrder(o){
+function removeOrder(o,mood){
   G.orders=G.orders.filter(x=>x!==o);
-  if(o.qEl)o.qEl.remove();
-  o.el.style.transition='transform .3s ease,opacity .3s ease';
-  o.el.style.transform='translateY(-26px) scale(.8)';
-  o.el.style.opacity='0';
-  setTimeout(()=>o.el.remove(),300);
+  o.el.classList.remove('hurry');
+  o.el.classList.add('gone');
+  o.el.style.left=(mood==='angry'?'-12%':'112%');
+  setTimeout(()=>o.el.remove(),700);
 }
 
 /* ================= 手 / 食材 ================= */

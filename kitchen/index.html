@@ -209,6 +209,7 @@
     border:2px solid var(--paper-edge);font-size:16px;padding:12px 34px;
   }
   .btn.ghost:active{box-shadow:0 1px 0 var(--paper-edge)}
+  .btn.ghost:disabled{opacity:.55;box-shadow:none;cursor:default}
   .demo-note{font-size:12px;color:var(--ink-soft);max-width:290px;line-height:1.7}
   .intro-card,.result-card{
     background:#fff;border-radius:26px;padding:28px 24px;width:100%;max-width:344px;
@@ -765,7 +766,7 @@ function icon(def,px,cls){
 }
 const FACES=['face_rabbit','face_fox','face_duck','face_sheep','face_cat','face_bear'];
 // 预加载全部素材
-['chef_idle','chef_run','chef_carry','chef_cheer','cub_pounce','cub_flee','stove','board','machine','serve_counter','trash','crate','kitchen_bg','logo','story_roof','story_shop','ing_rice','ing_egg','ing_meat','ing_bamboo','ing_fish','ing_cut','dish_milktea','dish_friedrice','dish_bamboopork','dish_grillfish','face_cub','face_mama_smile','face_mama_angry','face_mama_moved','face_papa_smile','face_papa_stern',...FACES]
+['chef_idle','chef_run','chef_carry','chef_cheer','cub_pounce','cub_flee','stove','board','machine','serve_counter','trash','crate','kitchen_bg','logo','story_roof','story_shop','ing_rice','ing_egg','ing_meat','ing_bamboo','ing_fish','ing_cut','dish_milktea','dish_friedrice','dish_bamboopork','dish_grillfish','face_cub','face_mama_smile','face_mama_angry','face_mama_moved','face_papa_smile','face_papa_stern','emo_star','emo_heart','emo_angry','emo_coin',...FACES]
   .forEach(n=>{const im=new Image();im.src=A+n+(n==='kitchen_bg'||n.startsWith('story_')?'.jpg':'.png');});
 const DAYS=[
   {name:'街坊开业日',emoji:'🌅',time:90,goal:120,spawn:9000,patience:30000,raid:0,
@@ -890,7 +891,8 @@ const G={
   chefX:50,chefY:52,chefSeq:0,walkT:null,
   buff:null,streak:0,maxStreak:0,lastServe:0,
   rushState:0,rushAt:0,rushUntil:0,rushLost0:0,
-  wallet:0,gear:{fast:0,win:0,tip:0,apron:0,fishr:0},
+  wallet:0,gear:{fast:0,win:0,tip:0,apron:0,fishr:0,tea:0},
+  failStreak:0,boughtOnSettle:false,
   own:{wok1:false,board:false},
   lastAdd:0,lastWallet:0,
 };
@@ -901,6 +903,7 @@ const GEAR=[
   {id:'win',  icon:'serve_counter', name:'保温出餐口', max:2, cost:[50,110],  desc:l=>`出锅完美窗口 +${0.6*(l+1)}s（永久）`},
   {id:'tip',  icon:'emo_coin',      name:'收银培训',   max:2, cost:[80,160],  desc:l=>`小费 +${25*(l+1)}%（永久）`},
   {id:'apron',icon:'trash',         name:'耐脏围裙',   max:1, cost:[40],      desc:l=>'清理烧焦不再扣钱'},
+  {id:'tea',icon:'machine',name:'奶茶机加压',max:2,cost:[70,140],desc:l=>`奶茶制作时间 −${25*(l+1)}%`},
   {id:'fishr',icon:'dish_grillfish',name:'菜谱·香烤鱼',max:1,cost:[250],desc:l=>'解锁 ¥50 高价菜（需先购入案板）',need:'board'},
 ];
 function renderShop(){
@@ -922,6 +925,8 @@ function renderShop(){
       const lv=G.gear[g.id];
       if(lv>=g.max||G.wallet<g.cost[lv])return;
       G.wallet-=g.cost[lv]; G.gear[g.id]++;
+      G.boughtOnSettle=true;
+      const rb=$('btn-replay'); rb.disabled=true; rb.textContent='已购置 · 不可重开';
       sfx.coin(); sfx.unlock&&sfx.unlock();
       renderShop();
     };
@@ -944,6 +949,7 @@ function showBuffs(){
 }
 function cookMsOf(r){ return r.cookMs*(G.buff==='fast'?0.8:1)*(1-0.08*G.gear.fast); }
 function winMsOf(r){ return r.winMs+600*G.gear.win; }
+function brewMsOf(){ return RECIPES.milktea.brewMs*(1-0.25*G.gear.tea); }
 
 /* ================= 大厨跑位（近大远小） ================= */
 function depthScale(y){ return 0.78+(y/100)*0.5; }
@@ -1201,8 +1207,8 @@ function tick(){
   const m=G.machine;
   if(m.state==='brewing'){
     const t=now-m.t0;
-    m.el.querySelector('.st-bar i').style.width=Math.min(100,t/RECIPES.milktea.brewMs*100)+'%';
-    if(t>=RECIPES.milktea.brewMs){
+    m.el.querySelector('.st-bar i').style.width=Math.min(100,t/brewMsOf()*100)+'%';
+    if(t>=brewMsOf()){
       m.state='ready';
       m.el.classList.add('ready');
       m.el.querySelector('.wok-items').innerHTML=`<img class="big" src="${A}dish_milktea.png">`;
@@ -1657,6 +1663,15 @@ function endDay(){
   } else { G.lastAdd=0; G.lastWallet=0; sfx.fail(); }
   const chNow=chapterInfo();
   const chDone=pass&&(chNow.idx>chBefore.idx||(chNow.done&&!chBefore.done));
+  // 连败救济：防止设备不足导致的死锁
+  let relief=0;
+  if(pass)G.failStreak=0;
+  else{
+    G.failStreak++;
+    if(G.failStreak>=2){ relief=50; G.wallet+=relief; }
+  }
+  G.boughtOnSettle=false;
+  const rb=$('btn-replay'); rb.disabled=false; rb.textContent='重开本日';
 
   $('res-stars').innerHTML=pass
     ?[1,2,3].map(i=>`<span class="${i<=stars?'':'off'}">⭐</span>`).join('')
@@ -1669,7 +1684,8 @@ function endDay(){
     `<div class="rrow ${G.lost?'miss':''}"><span>流失客人 ${G.lost?'（0 流失拿星）':'✓'}</span><b>${G.lost} 人</b></div>`+
     `<div class="rrow ${G.burns?'miss':''}"><span>烧焦次数 ${G.burns?'（0 烧焦拿星）':'✓'}</span><b>${G.burns} 次</b></div>`+
     `<div class="rrow"><span>最高连击 / 完美出锅</span><b>×${G.maxStreak} / ${G.perfects}次</b></div>`+
-    (pass&&G.cash>D.goal?`<div class="rrow"><span>超额营业 → 零花钱</span><b>+¥${G.cash-D.goal}</b></div>`:'');
+    (pass&&G.cash>D.goal?`<div class="rrow"><span>超额营业 → 零花钱</span><b>+¥${G.cash-D.goal}</b></div>`:'')+
+    (relief?`<div class="rrow"><span>🧧 街坊救济红包（快去买设备！）</span><b>+¥${relief} 零花钱</b></div>`:'');
   const ch=chapterInfo();
   $('res-chname').textContent=ch.done?'🏆 三项工程全完成':`🏗️ ${ch.name}`;
   $('res-roof').style.width=Math.min(100,ch.prog/ch.cost*100)+'%';
@@ -1727,16 +1743,16 @@ $('trash').addEventListener('pointerdown',e=>{
   });
 });
 
-$('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0,fishr:0}; G.own={wok1:false,board:false}; show('story'); };
+$('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0,fishr:0,tea:0}; G.own={wok1:false,board:false}; show('story'); };
 $('btn-story').onclick=()=>showIntro();
 $('btn-go').onclick=()=>showBuffs();
 $('btn-retry').onclick=()=>buildDay();
-$('btn-replay').onclick=()=>{ G.totalCash-=G.lastAdd||0; G.wallet=Math.max(0,G.wallet-(G.lastWallet||0)); G.lastAdd=0; G.lastWallet=0; buildDay(); };
+$('btn-replay').onclick=()=>{ if(G.boughtOnSettle)return; G.totalCash-=G.lastAdd||0; G.wallet=Math.max(0,G.wallet-(G.lastWallet||0)); G.lastAdd=0; G.lastWallet=0; buildDay(); };
 $('btn-next').onclick=()=>{
   if(chapterInfo().done)showFinal();
-  else{ G.day++; showIntro(); }
+  else{ G.day++; G.failStreak=0; showIntro(); }
 };
-$('btn-restart').onclick=()=>{ G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0,fishr:0}; G.own={wok1:false,board:false}; showIntro(); };
+$('btn-restart').onclick=()=>{ G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0,fishr:0,tea:0}; G.own={wok1:false,board:false}; showIntro(); };
 $('btn-mute').onclick=e=>{ muted=!muted; e.currentTarget.textContent=muted?'🔇':'🔊'; };
 
 document.addEventListener('gesturestart',e=>e.preventDefault());

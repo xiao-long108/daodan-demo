@@ -72,6 +72,35 @@
   .logo-img{width:250px;filter:drop-shadow(0 5px 0 rgba(194,78,40,.2)) drop-shadow(0 10px 14px rgba(43,38,32,.18))}
   .story-img{width:100%;border-radius:16px;border:2.5px solid var(--paper-edge);box-shadow:0 4px 10px rgba(43,38,32,.15)}
   .face-img{width:38px;height:38px;border-radius:50%;flex:0 0 auto;box-shadow:0 2px 4px rgba(43,38,32,.2)}
+  .buff-list{display:flex;flex-direction:column;gap:10px;width:100%}
+  .buff-card{
+    display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
+    background:var(--paper);border:2.5px solid var(--paper-edge);border-radius:16px;
+    padding:11px 14px;font-family:inherit;transition:transform .1s ease,border-color .1s ease;
+  }
+  .buff-card:active{transform:scale(.97);border-color:var(--persimmon)}
+  .buff-card img{width:44px;height:44px;object-fit:contain;flex:0 0 auto}
+  .buff-card b{display:block;font-size:15px;color:var(--bamboo-deep);letter-spacing:.05em}
+  .buff-card small{font-size:12px;color:var(--ink-soft);line-height:1.5}
+  .buff-card .tagchip{
+    margin-left:auto;flex:0 0 auto;font-size:10px;font-weight:800;letter-spacing:.1em;
+    background:var(--persimmon);color:#fff;border-radius:999px;padding:3px 9px;
+  }
+  #rushbanner{
+    position:absolute;left:50%;top:34%;transform:translateX(-50%) scale(0);z-index:210;
+    background:linear-gradient(180deg,var(--persimmon),var(--persimmon-deep));color:#fff;
+    font-size:19px;font-weight:900;letter-spacing:.14em;padding:12px 26px;border-radius:999px;
+    box-shadow:0 8px 24px rgba(194,78,40,.5);pointer-events:none;white-space:nowrap;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  #rushbanner.on{transform:translateX(-50%) scale(1)}
+  .qwrap{position:relative;display:inline-block}
+  .qmood{
+    position:absolute;top:-9px;right:-8px;width:17px;height:17px;display:none;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));animation:qBob .5s ease-in-out infinite;
+  }
+  .queuer.hurry .qmood{display:block}
+  .score-pop img{height:22px;vertical-align:middle}
   .logo{
     font-size:50px;font-weight:900;letter-spacing:.12em;color:var(--persimmon-deep);
     text-shadow:0 3px 0 #fff,0 6px 0 rgba(194,78,40,.22);line-height:1.15;
@@ -501,6 +530,16 @@
     <button class="btn" id="btn-story">接下任务</button>
   </div>
 
+  <!-- 开工三选一 -->
+  <div class="screen" id="scr-buff">
+    <div class="intro-card">
+      <div class="intro-kicker" id="buff-kicker">第 1 天 · 开工准备</div>
+      <div class="intro-name">今日加成 · 三选一</div>
+      <p class="intro-line">每天开工前选一张，想清楚今天缺什么！</p>
+      <div class="buff-list" id="buff-list"></div>
+    </div>
+  </div>
+
   <!-- 每日引导 -->
   <div class="screen" id="scr-intro">
     <div class="intro-card">
@@ -529,6 +568,7 @@
       <span id="daylabel">90s</span>
     </div>
     <div id="orders"></div>
+    <div id="rushbanner">📢 放学高峰！顶住！</div>
     <div id="kitchen">
       <div class="wall">
         <div class="menuboard" id="menuboard"></div>
@@ -676,6 +716,11 @@ const DAYS=[
 ];
 const CUSTOMERS=['🧑','👵','👦','👧','🧔','👩','🐰','🦊'];
 const CHOP_HITS=6;
+const BUFFS=[
+  {id:'fast',icon:'stove',name:'猛火灶',desc:'炒制时间 −20%，出锅窗口不变'},
+  {id:'patient',icon:'face_sheep',name:'好脾气街坊',desc:'所有客人耐心 +6 秒'},
+  {id:'tips',icon:'emo_coin',name:'大方客人',desc:'小费翻倍'},
+];
 
 /* ================= 音效 ================= */
 let actx=null,muted=false;
@@ -712,7 +757,7 @@ const sfx={
 
 /* ================= 状态 ================= */
 const $=id=>document.getElementById(id);
-const screens={title:$('scr-title'),story:$('scr-story'),intro:$('scr-intro'),play:$('scr-play'),result:$('scr-result'),final:$('scr-final')};
+const screens={title:$('scr-title'),story:$('scr-story'),intro:$('scr-intro'),buff:$('scr-buff'),play:$('scr-play'),result:$('scr-result'),final:$('scr-final')};
 function show(name){ Object.values(screens).forEach(s=>s.classList.remove('active')); screens[name].classList.add('active'); }
 const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -727,7 +772,25 @@ const G={
   nextSpawn:0,nextRaid:0,raidObj:null,
   over:false,
   chefX:50,chefY:52,chefSeq:0,walkT:null,
+  buff:null,streak:0,maxStreak:0,lastServe:0,
+  rushState:0,rushAt:0,rushUntil:0,rushLost0:0,
 };
+
+/* ================= 开工三选一 ================= */
+function showBuffs(){
+  $('buff-kicker').textContent=`第 ${G.day+1} 天 · 开工准备`;
+  const order=[...BUFFS].sort(()=>Math.random()-.5);
+  $('buff-list').innerHTML=order.map(b=>
+    `<button class="buff-card" data-buff="${b.id}">
+      <img src="${A}${b.icon}.png"><span><b>${b.name}</b><small>${b.desc}</small></span>
+      <span class="tagchip">今日限定</span>
+    </button>`).join('');
+  $('buff-list').querySelectorAll('.buff-card').forEach(c=>{
+    c.onclick=()=>{ ac(); G.buff=c.dataset.buff; sfx.coin(); buildDay(); };
+  });
+  show('buff');
+}
+function cookMsOf(r){ return r.cookMs*(G.buff==='fast'?0.8:1); }
 
 /* ================= 大厨跑位（近大远小） ================= */
 function depthScale(y){ return 0.78+(y/100)*0.5; }
@@ -782,6 +845,7 @@ function showIntro(){
     ['🔥','进度条变<b>绿</b>时点锅出菜，错过就<b>烧焦</b>！做好的菜送到<b>出餐口</b>（或直接点订单卡）交单。'],
   ];
   if(D.raid)rules.push(['🐼','熊猫崽会扑上灶台<b>偷吃</b>——跑过去连点 3 下赶走，慢了整锅被偷光！']);
+  rules.push(['⚡','开工前<b>三选一今日加成</b>；营业中段有<b>放学高峰</b>，顶住不丢单奖 ¥50；连续快速上菜吃<b>连击奖金</b>！']);
   $('intro-rules').innerHTML=rules.map(([i,t])=>`<div class="rule"><span class="ri">${i}</span><span>${t}</span></div>`).join('');
   show('intro');
 }
@@ -869,6 +933,9 @@ function buildDay(){
   const now=performance.now();
   G.nextSpawn=now+800;
   G.nextRaid=D.raid?now+D.raid:Infinity;
+  G.streak=0; G.maxStreak=0; G.lastServe=0;
+  G.rushState=0; G.rushAt=now+D.time*1000*0.42; G.rushUntil=0;
+  $('rushbanner').classList.remove('on');
   G.loop=setInterval(tick,100);
 
   show('play');
@@ -883,10 +950,28 @@ function tick(){
   const now=performance.now();
   const D=DAYS[G.day];
 
+  // 放学高峰事件
+  if(G.rushState===0&&now>=G.rushAt){
+    G.rushState=1; G.rushUntil=now+18000; G.rushLost0=G.lost;
+    $('rushbanner').classList.add('on');
+    sfx.raid(); sfx.raid();
+    setTimeout(()=>$('rushbanner').classList.remove('on'),2600);
+  }
+  if(G.rushState===1&&now>=G.rushUntil){
+    G.rushState=2;
+    if(G.lost===G.rushLost0){
+      G.cash+=50; updCash();
+      const r=$('kitchen').getBoundingClientRect();
+      scorePop(r.left+r.width/2,r.top+r.height/2,'高峰全接住 +¥50',true);
+      toast('🎉 高峰期一单没丢！奖金 ¥50','warn');
+      sfx.win();
+    }
+  }
+  const rushOn=G.rushState===1;
   // 出新订单
-  if(now>=G.nextSpawn&&G.orders.length<3){
+  if(now>=G.nextSpawn&&G.orders.length<(rushOn?4:3)){
     spawnOrder();
-    G.nextSpawn=now+D.spawn*(0.8+Math.random()*0.4);
+    G.nextSpawn=now+D.spawn*(rushOn?0.45:1)*(0.8+Math.random()*0.4);
   }
   // 客人耐心
   G.orders.forEach(o=>{
@@ -894,16 +979,17 @@ function tick(){
     const p=Math.max(0,left/o.total*100);
     o.patEl.style.width=p+'%';
     o.el.classList.toggle('hurry',p<35);
+    if(o.qEl)o.qEl.classList.toggle('hurry',p<35);
     if(left<=0)loseOrder(o);
   });
   // 锅
   G.woks.forEach(w=>{
     if(w.state!=='cooking')return;
-    const r=w.recipe, t=now-w.t0;
+    const r=w.recipe, t=now-w.t0, cms=cookMsOf(r);
     const bar=w.el.querySelector('.st-bar i');
-    if(t<r.cookMs){
-      bar.style.width=(t/r.cookMs*100)+'%';
-    }else if(t<r.cookMs+r.winMs){
+    if(t<cms){
+      bar.style.width=(t/cms*100)+'%';
+    }else if(t<cms+r.winMs){
       if(!w.el.classList.contains('ready')){
         w.el.classList.remove('cooking');
         w.el.classList.add('ready');
@@ -918,6 +1004,9 @@ function tick(){
       w.el.querySelector('.wok-items').innerHTML='🔥';
       w.el.querySelector('.st-hint').textContent='烧焦了！点击清理';
       sfx.burn();
+      if(!reduceMotion)screens.play.animate(
+        [{transform:'translate(0,0)'},{transform:'translate(-5px,3px)'},{transform:'translate(5px,-3px)'},{transform:'translate(-3px,-2px)'},{transform:'translate(0,0)'}],
+        {duration:300});
     }
   });
   // 奶茶机
@@ -963,23 +1052,31 @@ function tick(){
 /* ================= 订单 ================= */
 function spawnOrder(){
   const D=DAYS[G.day];
-  const key=D.dishes[Math.floor(Math.random()*D.dishes.length)];
-  const r=RECIPES[key];
-  const vip=G.day>0&&Math.random()<0.22;
-  const price=r.price*(vip?2:1);
-  const total=D.patience*(vip?0.65:1)*(0.9+Math.random()*0.3);
+  const vip=G.day>0&&Math.random()<0.2;
+  const combo=!vip&&G.day>0&&Math.random()<0.18;
+  let keys=[D.dishes[Math.floor(Math.random()*D.dishes.length)]];
+  if(combo){
+    const rest=D.dishes.filter(k=>k!==keys[0]);
+    keys.push(rest[Math.floor(Math.random()*rest.length)]);
+  }
+  const base=keys.reduce((s,k)=>s+RECIPES[k].price,0);
+  const price=Math.round(base*(vip?2:combo?1.2:1));
+  const pat=D.patience+(G.buff==='patient'?6000:0);
+  const total=pat*(vip?0.65:combo?1.25:1)*(0.9+Math.random()*0.3);
   const face=FACES[Math.floor(Math.random()*FACES.length)];
   const el=document.createElement('div'); el.className='order'+(vip?' vip':'');
   el.innerHTML=
     `<span class="cust">${vip?'🌟':`<img src="${A}${face}.png">`}</span>`+
-    `<span class="oe"><img src="${A}${r.img}.png"></span><span class="on">${r.name}</span>`+
+    `<span class="oe">${keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')}</span>`+
+    `<span class="on">${combo?'两道套餐':RECIPES[keys[0]].name}</span>`+
     `<span class="op">¥${price}</span><span class="pat"><i></i></span>`;
-  const o={id:++G.orderSeq,key,vip,price,total,deadline:performance.now()+total,el,patEl:el.querySelector('.pat i')};
-  // 后墙排队的客人
+  const o={id:++G.orderSeq,keys,vip,combo,price,paid:0,total,deadline:performance.now()+total,el,patEl:el.querySelector('.pat i')};
+  // 后墙排队的客人（带情绪气泡）
   const q=document.createElement('span'); q.className='queuer';
-  q.innerHTML=`<img src="${A}${face}.png">`;
+  q.innerHTML=`<span class="qwrap"><img src="${A}${face}.png"><img class="qmood" src="${A}emo_angry.png"></span>`;
   $('queue').appendChild(q); o.qEl=q;
   if(vip)toast('🌟 加急订单！双倍价，但客人急脾气','warn');
+  else if(combo)toast('🍱 套餐单！两道菜都送到才算完','warn');
   el.addEventListener('pointerdown',e=>{e.preventDefault();ac();serveOrder(o);});
   $('orders').appendChild(el);
   G.orders.push(o);
@@ -988,36 +1085,64 @@ function spawnOrder(){
 function serveOrder(o){
   if(G.over)return;
   if(!G.hand||G.hand.kind!=='dish'){ shake(o.el); toast('先做好菜拿在手上，再来交单'); return; }
-  if(G.hand.id!==o.key){ shake(o.el); sfx.wrong(); toast('客人点的不是这道菜！'); return; }
+  if(!o.keys.includes(G.hand.id)){ shake(o.el); sfx.wrong(); toast('客人点的不是这道菜！'); return; }
   goDo($('serve'),()=>doServe(o));
 }
 function serveAtWindow(){
   if(!G.hand||G.hand.kind!=='dish'){ shake($('serve')); toast('手上没有做好的菜'); return; }
   // 自动交给等得最久的同菜客人
-  const o=G.orders.find(x=>x.key===G.hand.id);
+  const o=G.orders.find(x=>x.keys.includes(G.hand.id));
   if(!o){ shake($('serve')); sfx.wrong(); toast('没有客人点这道菜……先别做多'); return; }
   doServe(o);
+}
+function bumpStreak(rect){
+  const now=performance.now();
+  G.streak=(now-G.lastServe<9000)?G.streak+1:1;
+  G.lastServe=now;
+  G.maxStreak=Math.max(G.maxStreak,G.streak);
+  if(G.streak>=2){
+    const bonus=G.streak*10;
+    G.cash+=bonus; updCash();
+    scorePop(rect.left+rect.width/2,rect.top+42,
+      `<img src="${A}emo_star.png"> 连击×${G.streak} +¥${bonus}`,true);
+    tone(880+G.streak*80,.1,'triangle',.1);
+  }
 }
 function doServe(o){
   if(G.over)return;
   if(!G.orders.includes(o)){ toast('😡 客人刚走……手再快点！','warn'); return; }
-  if(!G.hand||G.hand.kind!=='dish'||G.hand.id!==o.key)return;
-  const ratio=Math.max(0,(o.deadline-performance.now())/o.total);
-  const tip=Math.round(o.price*0.5*ratio);
+  if(!G.hand||G.hand.kind!=='dish'||!o.keys.includes(G.hand.id))return;
+  const dish=G.hand.id;
   const rect=o.el.getBoundingClientRect();
-  addCash(o.price+tip,rect.left+rect.width/2,rect.top+10,tip>0?`+¥${o.price} 小费¥${tip}`:`+¥${o.price}`);
-  G.served++;
+  o.keys.splice(o.keys.indexOf(dish),1);
   G.hand=null; renderHand();
-  removeOrder(o);
-  sfx.serve(); sfx.coin();
+  G.served++;
+  if(o.keys.length){
+    // 套餐先交一道
+    const part=RECIPES[dish].price;
+    o.paid+=part;
+    addCash(part,rect.left+rect.width/2,rect.top+10,`+¥${part} 还差一道！`);
+    o.el.querySelector('.oe').innerHTML=o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('');
+    sfx.place(); sfx.coin();
+  }else{
+    const ratio=Math.max(0,(o.deadline-performance.now())/o.total);
+    const tip=Math.round(o.price*0.5*ratio)*(G.buff==='tips'?2:1);
+    const due=o.price-o.paid+tip;
+    addCash(due,rect.left+rect.width/2,rect.top+10,tip>0?`+¥${o.price-o.paid} 小费¥${tip}`:`+¥${o.price-o.paid}`);
+    scorePop(rect.left+rect.width/2-30,rect.top-6,`<img src="${A}emo_heart.png">`,true);
+    removeOrder(o);
+    sfx.serve(); sfx.coin();
+  }
+  bumpStreak(rect);
   updateChefImg('chef_cheer');
   setTimeout(()=>updateChefImg(),650);
 }
 function loseOrder(o){
   removeOrder(o);
   G.lost++;
+  G.streak=0;
   sfx.angry();
-  toast('😡 客人等不及走了！','warn');
+  toast('😡 客人等不及走了！连击中断','warn');
 }
 function removeOrder(o){
   G.orders=G.orders.filter(x=>x!==o);
@@ -1091,8 +1216,8 @@ function wokTap(w,e){
     return;
   }
   if(w.state==='cooking'){
-    const now=performance.now(),r=w.recipe;
-    if(now-w.t0>=r.cookMs&&now-w.t0<r.cookMs+r.winMs){
+    const now=performance.now(),r=w.recipe,cms=cookMsOf(r);
+    if(now-w.t0>=cms&&now-w.t0<cms+r.winMs){
       // 完美出锅
       if(G.hand){ shake(w.el); toast('手上有东西，腾不出手出锅！'); return; }
       G.hand={kind:'dish',id:w.recipeKey};
@@ -1257,7 +1382,7 @@ function flyFromTo(fromRect,toRect,html,onDone){
 function scorePop(x,y,text,alt,bad){
   const p=document.createElement('div');
   p.className='score-pop'+(alt?' alt':'')+(bad?' bad':'');
-  p.textContent=text;
+  p.innerHTML=text;
   p.style.left=(x-20)+'px'; p.style.top=(y-40)+'px';
   document.body.appendChild(p);
   setTimeout(()=>p.remove(),880);
@@ -1295,7 +1420,8 @@ function endDay(){
   $('res-rows').innerHTML=
     `<div class="rrow"><span>成功上菜</span><b>${G.served} 单</b></div>`+
     `<div class="rrow ${G.lost?'miss':''}"><span>流失客人 ${G.lost?'（0 流失拿星）':'✓'}</span><b>${G.lost} 人</b></div>`+
-    `<div class="rrow ${G.burns?'miss':''}"><span>烧焦次数 ${G.burns?'（0 烧焦拿星）':'✓'}</span><b>${G.burns} 次</b></div>`;
+    `<div class="rrow ${G.burns?'miss':''}"><span>烧焦次数 ${G.burns?'（0 烧焦拿星）':'✓'}</span><b>${G.burns} 次</b></div>`+
+    `<div class="rrow"><span>最高连击</span><b>×${G.maxStreak}</b></div>`;
   $('res-roof').style.width=Math.min(100,G.totalCash/800*100)+'%';
   $('res-rooftxt').textContent=`¥${G.totalCash}/800`;
   $('btn-next').style.display=pass?'':'none';
@@ -1351,7 +1477,7 @@ $('trash').addEventListener('pointerdown',e=>{
 
 $('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; show('story'); };
 $('btn-story').onclick=()=>showIntro();
-$('btn-go').onclick=()=>buildDay();
+$('btn-go').onclick=()=>showBuffs();
 $('btn-retry').onclick=()=>buildDay();
 $('btn-replay').onclick=()=>{ G.totalCash-=G.lastAdd||0; G.lastAdd=0; buildDay(); };
 $('btn-next').onclick=()=>{

@@ -118,7 +118,7 @@
     border-top:2px solid #F5E3BD;
   }
   .cust{
-    position:absolute;transform:translate(-50%,-50%);z-index:24;
+    position:absolute;transform:translate(-50%,-50%) scale(var(--csc,1));z-index:24;
     display:flex;flex-direction:column;align-items:center;gap:3px;
     cursor:pointer;transition:left .6s ease,top .6s ease,opacity .35s ease;
   }
@@ -143,7 +143,7 @@
     padding:2px 6px;border-radius:999px;box-shadow:0 2px 3px rgba(0,0,0,.25);
   }
   .cust.hurry{--rc:#D25B4A;animation:custShake .5s ease infinite}
-  @keyframes custShake{0%,100%{transform:translate(-50%,-50%) rotate(0)}30%{transform:translate(-50%,-50%) rotate(-3deg)}70%{transform:translate(-50%,-50%) rotate(3deg)}}
+  @keyframes custShake{0%,100%{transform:translate(-50%,-50%) scale(var(--csc,1)) rotate(0)}30%{transform:translate(-50%,-50%) scale(var(--csc,1)) rotate(-3deg)}70%{transform:translate(-50%,-50%) scale(var(--csc,1)) rotate(3deg)}}
   .cust.gone{opacity:0;pointer-events:none}
   .cust .trait{
     position:absolute;top:-7px;left:-7px;z-index:2;
@@ -154,12 +154,12 @@
   }
   .cust.regular .ring{box-shadow:0 0 0 3px var(--gold),0 3px 8px rgba(28,49,34,.4)}
   .cust.regular::before{content:"⭐";position:absolute;top:-11px;right:-6px;font-size:13px;z-index:3}
-  .cust.boss{transform:translate(-50%,-50%) scale(1.22)}
+  .cust.boss{--csc:1.22}
   .cust.boss .want{background:linear-gradient(180deg,#FFE1C9,#FFC894);box-shadow:0 0 0 2px var(--persimmon),0 3px 8px rgba(0,0,0,.3)}
   .cust.boss::after{content:"巨额订单";background:var(--persimmon)!important;color:#fff!important}
   #scr-play.fever #kitchen{filter:saturate(1.3) brightness(1.07)}
   #fever-chip{
-    position:absolute;left:50%;top:132px;transform:translateX(-50%) scale(0);z-index:41;
+    position:absolute;left:50%;top:46%;transform:translateX(-50%) scale(0);z-index:41;
     background:linear-gradient(90deg,#FFB347,#FF6B35);color:#fff;
     font-weight:900;font-size:14px;letter-spacing:.1em;padding:6px 16px;border-radius:999px;
     box-shadow:0 0 18px rgba(255,120,40,.8);transition:transform .2s cubic-bezier(.34,1.56,.64,1);
@@ -367,6 +367,18 @@
     background:none;pointer-events:none;
   }
   .wall>*{pointer-events:auto}
+  #menustrip{
+    flex:0 0 auto;display:flex;align-items:center;gap:7px;
+    padding:5px 12px;background:var(--bamboo-dark);z-index:18;
+    overflow-x:auto;
+  }
+  #menustrip b{font-size:9.5px;font-weight:800;letter-spacing:.3em;color:var(--gold);flex:0 0 auto}
+  #menustrip .mchip{
+    display:flex;align-items:center;gap:3px;flex:0 0 auto;
+    background:rgba(255,255,255,.1);border-radius:999px;padding:2px 9px 2px 4px;
+    font-size:11px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;
+  }
+  #menustrip .mchip img{height:19px}
   .menuboard{
     position:absolute;right:4%;top:10%;width:25%;height:66%;z-index:3;
     background:#33291D;border:3px solid #6B4F33;border-radius:8px;
@@ -403,7 +415,7 @@
   #wok0 .st-img,#wok1 .st-img{width:100px}
   #board .st-img{width:96px}
   #machine .st-img{width:76px}
-  #serve .st-img{width:138px}
+  #serve .st-img{width:122px}
   #trash .st-img{width:58px}
   .wok-items{
     position:absolute;left:50%;top:20%;transform:translateX(-50%);
@@ -678,12 +690,11 @@
       <div id="daytrack"><div id="dayfill"></div></div>
       <span id="daylabel">90s</span>
     </div>
+    <div id="menustrip"></div>
     <div id="rushbanner">📢 放学高峰！顶住！</div>
     <div id="fever-chip">🔥 狂热时间 10s</div>
     <div id="kitchen">
-      <div class="wall">
-        <div class="menuboard" id="menuboard"></div>
-      </div>
+      <div class="wall"></div>
       <div id="bar"></div>
       <div class="station" id="serve" data-x="50" data-y="19" style="left:50%;top:19%">
         <div class="st-body"><img class="st-img" src="assets/serve_counter.png" alt=""></div>
@@ -1082,7 +1093,7 @@ function showIntro(){
 
 /* ================= 成长购置 ================= */
 function refreshMenuboard(){
-  $('menuboard').innerHTML='<b>本日菜单</b>'+curDishes().map(k=>`<span class="mrow"><img src="${A}${RECIPES[k].img}.png" style="height:16px;vertical-align:middle"><small style="font-size:8px"> ¥${RECIPES[k].price}</small></span>`).join('');
+  $('menustrip').innerHTML='<b>菜单</b>'+curDishes().map(k=>`<span class="mchip"><img src="${A}${RECIPES[k].img}.png">¥${RECIPES[k].price}</span>`).join('');
 }
 function rebuildCrates(){
   document.querySelectorAll('#kitchen .ing').forEach(el=>el.remove());
@@ -1351,7 +1362,7 @@ function tick(){
 }
 
 /* ================= 订单 ================= */
-const CUST_SLOTS=[{x:14,y:16},{x:31,y:16},{x:69,y:16},{x:86,y:16}];
+const CUST_SLOTS=[{x:13,y:16},{x:30,y:16},{x:70,y:16},{x:87,y:16}];
 function wantHTML(o){
   return o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')+`¥${o.price}`;
 }

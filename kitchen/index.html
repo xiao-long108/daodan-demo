@@ -1155,6 +1155,11 @@ function spawnOrder(){
   const vip=G.day>0&&Math.random()<0.2;
   const combo=!vip&&G.day>0&&Math.random()<0.18;
   let keys=[D.dishes[Math.floor(Math.random()*D.dishes.length)]];
+  // 避免同一道菜扎堆：已有两人在等它就换一道
+  if(G.orders.filter(o=>o.keys.includes(keys[0])).length>=2){
+    const alt=D.dishes.filter(k=>k!==keys[0]);
+    if(alt.length)keys[0]=alt[Math.floor(Math.random()*alt.length)];
+  }
   if(combo){
     const rest=D.dishes.filter(k=>k!==keys[0]);
     keys.push(rest[Math.floor(Math.random()*rest.length)]);

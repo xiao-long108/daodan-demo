@@ -51,14 +51,21 @@
   .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--paper)}
   .screen.active{display:flex}
 
-  /* ---------- 封面/结算通用 ---------- */
-  #scr-title,#scr-intro,#scr-result,#scr-final{
-    align-items:center;justify-content:center;gap:20px;padding:28px;text-align:center;
+  /* ---------- 封面/结算通用（可滚动，防止内容挤掉按钮） ---------- */
+  #scr-title,#scr-story,#scr-intro,#scr-result,#scr-fail,#scr-final{
+    align-items:center;justify-content:flex-start;gap:18px;padding:24px;text-align:center;
+    overflow-y:auto;
     background:
       radial-gradient(circle at 20% 12%, rgba(240,180,41,.16), transparent 40%),
       radial-gradient(circle at 85% 90%, rgba(228,104,63,.12), transparent 45%),
       linear-gradient(180deg,#F6EAD8 0%,var(--paper) 55%);
   }
+  /* 内容矮时居中、高时可滚动到按钮 */
+  #scr-title>:first-child,#scr-story>:first-child,#scr-intro>:first-child,#scr-fail>:first-child,#scr-final>:first-child{margin-top:auto}
+  #scr-title>:last-child,#scr-story>:last-child,#scr-intro>:last-child,#scr-fail>:last-child,#scr-final>:last-child{margin-bottom:auto}
+  #scr-result .result-card{margin-top:auto}
+  #scr-result .btn-col{margin-bottom:auto}
+  .intro-card,.result-card,.btn,.btn-col,.pitch,.chef{flex-shrink:0}
   .chef{font-size:0;display:flex;align-items:flex-end;gap:4px}
   .chef span{display:inline-block;filter:drop-shadow(0 6px 0 rgba(43,38,32,.12))}
   .chef .c1{font-size:72px}
@@ -277,6 +284,37 @@
     cursor:pointer;min-height:88px;transition:filter .1s ease;
   }
   .station:active{filter:brightness(.94)}
+  .station::before{ /* 台座厚度 */
+    content:"";position:absolute;left:5px;right:5px;bottom:-9px;height:13px;z-index:-1;
+    border-radius:0 0 12px 12px;
+    background:linear-gradient(180deg,rgba(43,38,32,.30),rgba(43,38,32,.5));
+  }
+  .station.stove.cooking{animation:stoveGlow 1s ease-in-out infinite}
+  @keyframes stoveGlow{
+    0%,100%{box-shadow:0 5px 10px rgba(43,38,32,.28),0 0 14px 2px rgba(228,104,63,.5)}
+    50%{box-shadow:0 5px 10px rgba(43,38,32,.28),0 0 24px 6px rgba(240,180,41,.65)}
+  }
+  .steam{
+    position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:44px;height:32px;pointer-events:none;z-index:6;display:none;
+  }
+  .station.cooking .steam,.station.ready .steam{display:block}
+  .steam i{
+    position:absolute;bottom:2px;left:50%;width:9px;height:9px;border-radius:50%;
+    background:rgba(255,255,255,.9);opacity:0;
+    animation:puff 1.6s ease-in infinite;
+  }
+  .steam i:nth-child(2){left:32%;animation-delay:.55s}
+  .steam i:nth-child(3){left:68%;animation-delay:1.1s}
+  @keyframes puff{
+    0%{transform:translate(-50%,0) scale(.55);opacity:0}
+    25%{opacity:.9}
+    100%{transform:translate(-50%,-28px) scale(1.7);opacity:0}
+  }
+  #kitchen::after{ /* 暗角聚光 */
+    content:"";position:absolute;inset:0;z-index:200;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 40%, transparent 52%, rgba(28,49,34,.26));
+  }
   .station.serve-win{
     background:linear-gradient(180deg,#4A3B2C,#3A2E22);border-color:#2C231A;
     color:#fff;width:112px;min-height:76px;
@@ -529,6 +567,7 @@
         <div class="st-body">🍳</div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
+        <div class="steam"><i></i><i></i><i></i></div>
         <div class="raid"><span class="re">🐼</span>偷吃！连点赶走</div>
       </div>
       <div class="station stove" id="wok1" data-kind="wok" data-x="15" data-y="64" style="left:15%;top:64%">
@@ -536,6 +575,7 @@
         <div class="st-body">🍳</div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
+        <div class="steam"><i></i><i></i><i></i></div>
         <div class="raid"><span class="re">🐼</span>偷吃！连点赶走</div>
       </div>
       <div class="station wooden" id="board" data-kind="board" data-x="85" data-y="36" style="left:85%;top:36%">
@@ -1256,7 +1296,7 @@ function endDay(){
   const D=DAYS[G.day];
   const pass=G.cash>=D.goal;
   const stars=pass?1+(G.lost===0?1:0)+(G.burns===0?1:0):0;
-  if(pass){ G.totalCash+=G.cash; sfx.win(); } else sfx.fail();
+  if(pass){ G.totalCash+=G.cash; G.lastAdd=G.cash; sfx.win(); } else { G.lastAdd=0; sfx.fail(); }
 
   $('res-stars').innerHTML=pass
     ?[1,2,3].map(i=>`<span class="${i<=stars?'':'off'}">⭐</span>`).join('')
@@ -1325,7 +1365,7 @@ $('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; show('story'); };
 $('btn-story').onclick=()=>showIntro();
 $('btn-go').onclick=()=>buildDay();
 $('btn-retry').onclick=()=>buildDay();
-$('btn-replay').onclick=()=>buildDay();
+$('btn-replay').onclick=()=>{ G.totalCash-=G.lastAdd||0; G.lastAdd=0; buildDay(); };
 $('btn-next').onclick=()=>{
   if(G.day>=DAYS.length-1)showFinal();
   else{ G.day++; showIntro(); }

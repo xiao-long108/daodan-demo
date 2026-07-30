@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1C3122">
+<title>捣蛋一家 · 试玩 Demo</title>
+</head>
+<body>
+<title>捣蛋一家 · 可玩 Demo</title>
+<style>
+  :root{
+    --bamboo:#3E6B4F;
+    --bamboo-deep:#28442F;
+    --bamboo-dark:#1C3122;
+    --paper:#F7EFDE;
+    --paper-edge:#EADFC6;
+    --ink:#2B2620;
+    --ink-soft:#6B6152;
+    --persimmon:#E4683F;
+    --persimmon-deep:#C24E28;
+    --gold:#F0B429;
+    --good:#4C9E6A;
+    --bad:#D25B4A;
+    --radius:18px;
+    --shadow:0 6px 18px rgba(28,49,34,.28);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 46px),
+      linear-gradient(180deg,var(--bamboo-deep),var(--bamboo-dark));
+    color:var(--ink);
+    display:flex;justify-content:center;align-items:center;
+    min-height:100dvh;
+    -webkit-user-select:none;user-select:none;
+    -webkit-touch-callout:none;
+    overflow:hidden;
+  }
+  #stage{
+    width:min(430px,100vw);
+    height:min(880px,100dvh);
+    background:var(--paper);
+    position:relative;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    box-shadow:0 0 0 6px var(--bamboo-dark),0 30px 60px rgba(0,0,0,.45);
+  }
+  @media (min-width:460px) and (min-height:920px){
+    #stage{border-radius:34px;box-shadow:0 0 0 8px var(--bamboo-dark),0 30px 80px rgba(0,0,0,.5)}
+  }
+
+  /* ---------- screens ---------- */
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--paper)}
+  .screen.active{display:flex}
+
+  /* ---------- title ---------- */
+  #scr-title{align-items:center;justify-content:center;gap:26px;text-align:center;
+    background:linear-gradient(180deg,#EDF2E0 0%,var(--paper) 55%)}
+  .family{display:flex;align-items:flex-end;gap:6px;font-size:0}
+  .family span{display:inline-block;filter:drop-shadow(0 6px 0 rgba(43,38,32,.12))}
+  .family .pa{font-size:76px}
+  .family .ma{font-size:64px}
+  .family .cub{font-size:46px;animation:cubHop 1.6s ease-in-out infinite}
+  @keyframes cubHop{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-14px) rotate(8deg)}}
+  .logo{
+    font-size:52px;font-weight:900;letter-spacing:.12em;color:var(--bamboo-deep);
+    text-shadow:0 3px 0 #fff,0 6px 0 rgba(62,107,79,.22);
+    line-height:1.15;
+  }
+  .logo em{font-style:normal;color:var(--persimmon)}
+  .tagline{
+    font-size:14px;color:var(--ink-soft);letter-spacing:.28em;font-weight:600;
+    border-top:1px solid var(--paper-edge);border-bottom:1px solid var(--paper-edge);
+    padding:8px 4px;
+  }
+  .feature-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:320px}
+  .feature{
+    background:#fff;border:1.5px solid var(--paper-edge);border-radius:999px;
+    font-size:12.5px;font-weight:600;color:var(--bamboo-deep);padding:7px 13px;
+  }
+  .btn{
+    font-family:inherit;border:none;cursor:pointer;
+    background:linear-gradient(180deg,var(--persimmon),var(--persimmon-deep));
+    color:#fff;font-size:20px;font-weight:800;letter-spacing:.18em;
+    padding:16px 54px;border-radius:999px;
+    box-shadow:0 5px 0 #93381B,var(--shadow);
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #93381B}
+  .btn.ghost{
+    background:#fff;color:var(--bamboo-deep);box-shadow:0 4px 0 var(--paper-edge);
+    border:2px solid var(--paper-edge);font-size:16px;padding:12px 34px;
+  }
+  .btn.ghost:active{box-shadow:0 1px 0 var(--paper-edge)}
+  .demo-note{font-size:12px;color:var(--ink-soft);max-width:280px;line-height:1.7}
+
+  /* ---------- intro ---------- */
+  #scr-intro{align-items:center;justify-content:center;gap:22px;padding:32px;text-align:center}
+  .intro-card{
+    background:#fff;border-radius:26px;padding:34px 26px 30px;width:100%;max-width:330px;
+    box-shadow:var(--shadow);border:2px solid var(--paper-edge);
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+  }
+  .intro-scene{font-size:74px;line-height:1}
+  .intro-kicker{font-size:12px;font-weight:700;letter-spacing:.3em;color:var(--persimmon)}
+  .intro-name{font-size:30px;font-weight:900;color:var(--bamboo-deep);letter-spacing:.1em}
+  .intro-line{font-size:15px;color:var(--ink);line-height:1.8}
+  .intro-goal{
+    font-size:13px;color:var(--ink-soft);line-height:1.8;background:var(--paper);
+    border-radius:14px;padding:12px 16px;text-align:left;
+  }
+  .intro-goal b{color:var(--persimmon-deep)}
+
+  /* ---------- play ---------- */
+  #scr-play{background:var(--scene-tint,#FCEED7)}
+  #hud{
+    display:flex;align-items:center;gap:10px;padding:12px 14px 10px;
+    background:var(--bamboo-deep);color:#fff;flex:0 0 auto;
+  }
+  .hud-level{font-size:14px;font-weight:800;letter-spacing:.06em;white-space:nowrap}
+  .hud-level small{display:block;font-size:10.5px;font-weight:600;opacity:.75;letter-spacing:.22em}
+  .hud-score{
+    margin-left:auto;text-align:right;font-variant-numeric:tabular-nums;
+    font-size:22px;font-weight:900;color:var(--gold);line-height:1;
+  }
+  .hud-score small{display:block;font-size:10px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.24em;margin-bottom:2px}
+  .hud-btn{
+    width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;flex:0 0 auto;
+    background:rgba(255,255,255,.14);color:#fff;font-size:17px;line-height:1;
+  }
+  .hud-btn:active{background:rgba(255,255,255,.3)}
+  #combo-chip{
+    position:absolute;left:50%;top:64px;transform:translateX(-50%) scale(0);
+    background:var(--persimmon);color:#fff;font-weight:900;font-size:16px;
+    padding:6px 16px;border-radius:999px;box-shadow:var(--shadow);
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1);z-index:40;pointer-events:none;
+    letter-spacing:.06em;
+  }
+  #combo-chip.on{transform:translateX(-50%) scale(1)}
+  #timer-wrap{height:8px;background:rgba(0,0,0,.14);flex:0 0 auto;display:none}
+  #timer-bar{height:100%;width:100%;background:linear-gradient(90deg,var(--gold),var(--persimmon));transition:width .3s linear}
+  #timer-wrap.urgent #timer-bar{background:var(--bad)}
+
+  #scene{
+    flex:1 1 auto;overflow-y:auto;padding:18px 16px 8px;
+    display:flex;flex-direction:column;gap:16px;justify-content:center;
+  }
+  .shelf{position:relative;padding:0 6px 12px}
+  .shelf-board{
+    position:absolute;left:0;right:0;bottom:0;height:12px;border-radius:6px;
+    background:var(--shelf,#E4C896);box-shadow:0 3px 0 rgba(43,38,32,.15);
+  }
+  .shelf-slots{display:flex;justify-content:center;gap:12px;position:relative}
+  .slot{
+    width:68px;height:68px;border-radius:16px;flex:0 0 auto;
+    border:2.5px dashed rgba(43,38,32,.28);background:rgba(255,255,255,.45);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    transition:transform .12s ease,border-color .12s ease,background .12s ease;
+  }
+  .slot .ghost{font-size:30px;line-height:1;filter:grayscale(1);opacity:.38}
+  .slot .slot-label{font-size:9.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.08em}
+  .slot.hot{transform:scale(1.1);border-color:var(--persimmon);background:#fff}
+  .slot.filled{border-style:solid;border-color:var(--good);background:#fff;box-shadow:0 4px 10px rgba(76,158,106,.25)}
+  .slot.filled .ghost{filter:none;opacity:1;animation:pop .35s cubic-bezier(.34,1.56,.64,1)}
+  .slot.filled .slot-label{color:var(--good)}
+  .slot.reject{animation:shake .4s ease}
+  @keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+
+  #mess{
+    flex:0 0 38%;position:relative;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(43,38,32,.10), transparent 62%),
+      linear-gradient(180deg, rgba(43,38,32,.06), rgba(43,38,32,.13));
+    border-top:2.5px dashed rgba(43,38,32,.2);
+    touch-action:none;
+  }
+  #mess::before{
+    content:"乱糟糟 · 拖到上面归位";
+    position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    font-size:10.5px;font-weight:700;letter-spacing:.3em;color:rgba(43,38,32,.4);
+    white-space:nowrap;pointer-events:none;
+  }
+  .item{
+    position:absolute;width:60px;height:60px;border-radius:15px;
+    background:#fff;border:2px solid var(--paper-edge);
+    box-shadow:0 4px 8px rgba(43,38,32,.18);
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;line-height:1;cursor:grab;
+    touch-action:none;
+  }
+  .item.dragging{cursor:grabbing;z-index:1000 !important;box-shadow:0 14px 26px rgba(43,38,32,.32);pointer-events:none}
+  .item.covered{background:#DFD6C2;border-color:#C8BDA4;cursor:default;filter:saturate(.4);box-shadow:0 2px 4px rgba(43,38,32,.12)}
+  .item.junk{border-color:#E0B65C;background:#FBF3DC}
+  .item.wiggler{animation:wiggle 7s ease-in-out infinite}
+  @keyframes wiggle{
+    0%,92%,100%{transform:rotate(var(--rot,0deg))}
+    94%{transform:rotate(calc(var(--rot,0deg) - 9deg))}
+    96%{transform:rotate(calc(var(--rot,0deg) + 9deg))}
+    98%{transform:rotate(calc(var(--rot,0deg) - 5deg))}
+  }
+  .score-pop{
+    position:fixed;z-index:200;pointer-events:none;
+    font-weight:900;font-size:20px;color:var(--persimmon-deep);
+    text-shadow:0 2px 0 #fff;
+    animation:rise .8s ease forwards;font-variant-numeric:tabular-nums;
+  }
+  .score-pop.prank-pop{color:var(--bamboo);font-size:17px}
+  @keyframes rise{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(0) scale(1.1)}100%{opacity:0;transform:translateY(-44px) scale(1)}}
+
+  #toast{
+    position:absolute;left:50%;bottom:calc(38% + 14px);transform:translateX(-50%) translateY(12px);
+    background:var(--ink);color:#fff;font-size:13.5px;line-height:1.6;font-weight:600;
+    padding:11px 18px;border-radius:16px;max-width:86%;text-align:center;
+    opacity:0;transition:opacity .25s ease,transform .25s ease;z-index:150;pointer-events:none;
+    box-shadow:var(--shadow);
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.prank{background:var(--persimmon-deep)}
+
+  /* ---------- result / final ---------- */
+  #scr-result,#scr-final,#scr-fail{align-items:center;justify-content:center;gap:20px;padding:30px;text-align:center;
+    background:linear-gradient(180deg,#EDF2E0 0%,var(--paper) 50%)}
+  .result-card{
+    background:#fff;border-radius:26px;border:2px solid var(--paper-edge);
+    box-shadow:var(--shadow);padding:30px 26px;width:100%;max-width:330px;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+  }
+  .stars{font-size:40px;letter-spacing:.1em;line-height:1}
+  .stars .off{opacity:.22;filter:grayscale(1)}
+  .result-title{font-size:26px;font-weight:900;color:var(--bamboo-deep);letter-spacing:.1em}
+  .result-score{font-size:44px;font-weight:900;color:var(--persimmon);font-variant-numeric:tabular-nums;line-height:1}
+  .result-score small{display:block;font-size:11px;color:var(--ink-soft);font-weight:600;letter-spacing:.3em;margin-bottom:4px}
+  .result-rows{width:100%;display:flex;flex-direction:column;gap:8px}
+  .rrow{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:13.5px;background:var(--paper);border-radius:12px;padding:9px 14px;
+  }
+  .rrow b{font-variant-numeric:tabular-nums;color:var(--bamboo-deep)}
+  .rrow.miss b{color:var(--bad)}
+  .btn-col{display:flex;flex-direction:column;gap:12px;align-items:center}
+  .final-levels{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .flv{
+    background:#fff;border:2px solid var(--paper-edge);border-radius:14px;
+    padding:8px 10px;font-size:11px;font-weight:700;color:var(--ink-soft);
+    display:flex;flex-direction:column;gap:3px;align-items:center;min-width:56px;
+  }
+  .flv .fe{font-size:22px}
+  .flv .fs{color:var(--gold);font-size:12px;letter-spacing:.05em}
+  .pitch{
+    font-size:12px;color:var(--ink-soft);line-height:1.8;max-width:300px;
+    background:#fff;border:1.5px dashed var(--paper-edge);border-radius:14px;padding:12px 16px;text-align:left;
+  }
+  .pitch b{color:var(--bamboo-deep)}
+
+  @media (prefers-reduced-motion:reduce){
+    .family .cub,.item.wiggler{animation:none}
+    .slot,.item,#toast,#combo-chip{transition:none}
+  }
+</style>
+
+<div id="stage">
+
+  <!-- 封面 -->
+  <div class="screen active" id="scr-title">
+    <div class="family" aria-hidden="true">
+      <span class="pa">🐼</span><span class="ma">🐼</span><span class="cub">🐼</span>
+    </div>
+    <div>
+      <div class="logo">捣蛋<em>一家</em></div>
+      <div style="height:10px"></div>
+      <div class="tagline">收 纳 解 压 · 益 智 小 游 戏</div>
+    </div>
+    <div class="feature-row">
+      <span class="feature">🧺 翻堆挖宝</span>
+      <span class="feature">⏱️ 限时收纳</span>
+      <span class="feature">🐼 熊猫崽边收边拆</span>
+      <span class="feature">🔥 连击得分</span>
+    </div>
+    <button class="btn" id="btn-start">开始整理</button>
+    <p class="demo-note">核心玩法验证 Demo · 5 个关卡<br>手机竖屏体验最佳，建议开声音</p>
+  </div>
+
+  <!-- 关卡引导 -->
+  <div class="screen" id="scr-intro">
+    <div class="intro-card">
+      <div class="intro-scene" id="intro-emoji">🍳</div>
+      <div class="intro-kicker" id="intro-kicker">第 1 关</div>
+      <div class="intro-name" id="intro-name">厨房</div>
+      <p class="intro-line" id="intro-line"></p>
+      <div class="intro-goal" id="intro-goal"></div>
+    </div>
+    <button class="btn" id="btn-go">开工！</button>
+  </div>
+
+  <!-- 游戏 -->
+  <div class="screen" id="scr-play">
+    <div id="hud">
+      <button class="hud-btn" id="btn-retry" title="重开本关">⟳</button>
+      <div class="hud-level"><small id="hud-kicker">第 1 关</small><span id="hud-name">厨房</span></div>
+      <div class="hud-score"><small>得分</small><span id="hud-score">0</span></div>
+      <button class="hud-btn" id="btn-mute" title="声音开关">🔊</button>
+    </div>
+    <div id="timer-wrap"><div id="timer-bar"></div></div>
+    <div id="combo-chip">🔥 连击 ×2</div>
+    <div id="scene"></div>
+    <div id="mess"></div>
+    <div id="toast"></div>
+  </div>
+
+  <!-- 过关 -->
+  <div class="screen" id="scr-result">
+    <div class="result-card">
+      <div class="stars" id="res-stars"></div>
+      <div class="result-title">收拾干净啦！</div>
+      <div class="result-score"><small>本关得分</small><span id="res-score">0</span></div>
+      <div class="result-rows" id="res-rows"></div>
+    </div>
+    <div class="btn-col">
+      <button class="btn" id="btn-next">下一关</button>
+      <button class="btn ghost" id="btn-replay">重玩本关</button>
+    </div>
+  </div>
+
+  <!-- 超时失败（限时关） -->
+  <div class="screen" id="scr-fail">
+    <div class="result-card">
+      <div class="intro-scene">🐼💨</div>
+      <div class="result-title">来不及啦！</div>
+      <p class="intro-line">熊猫妈进门了，屋里还是一团糟……<br>熊猫崽已经溜了，锅全是你的。</p>
+    </div>
+    <button class="btn" id="btn-fail-retry">再来一次</button>
+  </div>
+
+  <!-- 通关 -->
+  <div class="screen" id="scr-final">
+    <div class="family" aria-hidden="true">
+      <span class="pa">🐼</span><span class="ma">🐼</span><span class="cub">🐼</span>
+    </div>
+    <div class="result-card">
+      <div class="result-title">全屋整理完成！</div>
+      <div class="result-score"><small>总分</small><span id="fin-score">0</span></div>
+      <div class="final-levels" id="fin-levels"></div>
+    </div>
+    <div class="pitch">
+      <b>Demo 到此为止。</b>完整版规划：100+ 关卡（数据配置批量产出）、
+      每日限时"拆家现场"、激励视频复活/提示、熊猫家族皮肤收集——
+      全部走 IAA 广告变现，益智类目免版号上架抖音。
+    </div>
+    <button class="btn" id="btn-restart">再玩一遍</button>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ================= 关卡数据 ================= */
+const LEVELS = [
+  {
+    name:'厨房', emoji:'🍳', tint:'#FCEED7', shelf:'#E4C896', time:90,
+    line:'熊猫崽把厨房翻了个底朝天——熊猫妈五分钟后到家！',
+    items:[['🥘','炖锅'],['🥄','汤勺'],['🍽️','餐盘'],['🧂','盐罐'],['🥬','青菜'],['🍎','苹果']],
+    pranks:[['🧦','一只臭袜子？！它刚才一直泡在汤锅里……']],
+  },
+  {
+    name:'衣柜', emoji:'👕', tint:'#EFE6F4', shelf:'#C9AEDB', time:85,
+    line:'衣柜像被台风扫过。熊猫崽说他在"找过冬的衣服"。',
+    items:[['👕','上衣'],['👖','裤子'],['🧣','围巾'],['🧢','帽子'],['🧤','手套'],['👗','裙子'],['🩳','短裤']],
+    pranks:[['🍕','半块披萨藏在毛衣堆里，已经三天了。']],
+  },
+  {
+    name:'书房', emoji:'📚', tint:'#E3EDF6', shelf:'#9FBEDB', time:90, junkEvery:9000,
+    line:'熊猫爸的书房沦陷了。熊猫崽还在现场"做研究"——他会边收边扔！',
+    items:[['📕','红书'],['📗','绿书'],['📘','蓝书'],['✏️','铅笔'],['📐','三角尺'],['🖍️','蜡笔'],['📎','回形针'],['🗒️','便签']],
+    pranks:[['🪥','牙刷被当成了书签。'],['🍌','字典里夹着一根香蕉，压得很平。']],
+  },
+  {
+    name:'浴室', emoji:'🛁', tint:'#DFF2F0', shelf:'#8FC9C2', time:85, junkEvery:7000,
+    line:'浴室地上全是泡泡。熊猫崽的"游泳赛"还没结束，垃圾还在往里飞。',
+    items:[['🧴','沐浴露'],['🧼','香皂'],['🧻','纸巾'],['🪒','剃须刀'],['🧽','海绵'],['🦆','小黄鸭'],['🪞','镜子'],['🧺','脏衣篮']],
+    pranks:[['🎮','游戏手柄泡在浴缸里！熊猫爸要哭了。'],['⏰','闹钟也在泡澡。难怪今天全家睡过头。']],
+  },
+  {
+    name:'客厅', emoji:'🛋️', tint:'#F6E8DF', shelf:'#DBA98F', time:80, junkEvery:5000,
+    line:'终极挑战：熊猫妈已经在楼下了，熊猫崽还在疯狂拆家！80 秒！',
+    items:[['📱','手机'],['🕹️','摇杆'],['🪴','绿植'],['🕯️','蜡烛'],['📰','报纸'],['🎧','耳机'],['☕','咖啡杯'],['🧸','玩具熊'],['📀','光盘'],['🧩','拼图']],
+    pranks:[['🥚','沙发缝里有个蛋。熊猫崽想孵出一个弟弟。'],['🩴','一只人字拖在花瓶里插着，像一株新品种。']],
+  },
+];
+
+/* ================= 音效 ================= */
+let actx=null, muted=false;
+function ac(){ if(!actx){ try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){} } if(actx&&actx.state==='suspended')actx.resume(); return actx; }
+function tone(freq,dur,type,gain,when){
+  const c=ac(); if(!c||muted)return;
+  const t=c.currentTime+(when||0);
+  const o=c.createOscillator(),g=c.createGain();
+  o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(gain||0.16,t+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(t); o.stop(t+dur+0.05);
+}
+const sfx={
+  snap(combo){ const base=760+Math.min(combo,5)*90; tone(base,.09,'square',.07); tone(base*1.5,.12,'sine',.12,.05); },
+  wrong(){ tone(150,.16,'sawtooth',.08); },
+  prank(){ [660,880,1100,1320].forEach((f,i)=>tone(f,.1,'triangle',.1,i*.07)); },
+  win(){ [523,659,784,1046].forEach((f,i)=>tone(f,.22,'sine',.13,i*.11)); },
+  fail(){ [330,262,196].forEach((f,i)=>tone(f,.3,'sawtooth',.07,i*.16)); },
+  tick(){ tone(1200,.04,'square',.04); },
+};
+
+/* ================= 状态 ================= */
+const $=id=>document.getElementById(id);
+const screens={title:$('scr-title'),intro:$('scr-intro'),play:$('scr-play'),result:$('scr-result'),fail:$('scr-fail'),final:$('scr-final')};
+function show(name){ Object.values(screens).forEach(s=>s.classList.remove('active')); screens[name].classList.add('active'); }
+
+const G={
+  level:0, total:0, score:0,
+  placed:0, need:0,
+  combo:0, comboAt:0,
+  pranksFound:0, pranksAll:0, maxCombo:0,
+  results:[],       // {stars,score}
+  timer:null, timeLeft:0, timeMax:0,
+  locked:false,
+};
+
+/* ================= 关卡引导 ================= */
+function showIntro(){
+  const L=LEVELS[G.level];
+  $('intro-emoji').textContent=L.emoji;
+  $('intro-kicker').textContent=`第 ${G.level+1} 关`;
+  $('intro-name').textContent=L.name;
+  $('intro-line').textContent=L.line;
+  $('intro-goal').innerHTML=
+    `🎯 限时 <b>${L.time} 秒</b>，把 <b>${L.items.length} 件东西</b>拖回原位。`+
+    `<br>🧺 东西堆成山，被压住的是 <b>❓</b>——先挖上面的！`+
+    `<br>🐼 混着 <b>${L.pranks.length} 个恶作剧</b>，<b>轻点</b>揭穿拿大分。`+
+    (L.junkEvery?`<br>💥 熊猫崽就在现场，会<b>不停往里扔垃圾</b>盖住你的东西，轻点清掉！`:'');
+  show('intro');
+}
+
+/* ================= 搭建关卡 ================= */
+function buildLevel(){
+  const L=LEVELS[G.level];
+  G.score=0; G.placed=0; G.need=L.items.length;
+  G.combo=0; G.comboAt=0; G.maxCombo=0;
+  G.pranksFound=0; G.pranksAll=L.pranks.length;
+  G.locked=false;
+  clearInterval(G.timer); G.timer=null;
+
+  screens.play.style.setProperty('--scene-tint',L.tint);
+  $('hud-kicker').textContent=`第 ${G.level+1} 关`;
+  $('hud-name').textContent=L.name;
+  $('hud-score').textContent='0';
+  $('combo-chip').classList.remove('on');
+
+  // 货架与格子
+  const scene=$('scene'); scene.innerHTML='';
+  const per=L.items.length<=6?3:4;
+  for(let i=0;i<L.items.length;i+=per){
+    const shelf=document.createElement('div'); shelf.className='shelf';
+    const row=document.createElement('div'); row.className='shelf-slots';
+    L.items.slice(i,i+per).forEach(([emo,label],j)=>{
+      const s=document.createElement('div'); s.className='slot';
+      s.dataset.emoji=emo;
+      s.style.setProperty('--shelf',L.shelf);
+      s.innerHTML=`<span class="ghost">${emo}</span><span class="slot-label">${label}</span>`;
+      row.appendChild(s);
+    });
+    const board=document.createElement('div'); board.className='shelf-board'; board.style.background=L.shelf;
+    shelf.appendChild(row); shelf.appendChild(board);
+    scene.appendChild(shelf);
+  }
+
+  // 散落物（真实物品 + 恶作剧混洗）
+  const mess=$('mess'); mess.innerHTML='';
+  const pool=[
+    ...L.items.map(([emo,label])=>({emo,label,prank:null})),
+    ...L.pranks.map(([emo,story])=>({emo,label:'',prank:story})),
+  ];
+  for(let i=pool.length-1;i>0;i--){ const k=Math.floor(Math.random()*(i+1)); [pool[i],pool[k]]=[pool[k],pool[i]]; }
+
+  // 堆成几座小山，強制互相遮挡
+  G.zTop=0;
+  const nClusters=Math.max(2,Math.ceil(pool.length/3.5));
+  const centers=Array.from({length:nClusters},(_,i)=>({
+    x:14+(i+0.5)/nClusters*72+(Math.random()*8-4),
+    y:42+Math.random()*30,
+  }));
+  pool.forEach((it,idx)=>{
+    const el=document.createElement('div'); el.className='item';
+    el.textContent=it.emo;
+    el.dataset.emoji=it.emo;
+    if(it.prank){ el.dataset.prank=it.prank; el.classList.add('wiggler'); el.style.animationDelay=(2+Math.random()*5)+'s'; }
+    const c=centers[idx%nClusters];
+    const x=Math.min(84,Math.max(2,c.x+(Math.random()*16-8)));
+    const y=Math.min(76,Math.max(20,c.y+(Math.random()*22-11)));
+    el.style.left=x+'%'; el.style.top=y+'%';
+    el.style.zIndex=++G.zTop;
+    const rot=(Math.random()*36-18).toFixed(0)+'deg';
+    el.style.setProperty('--rot',rot);
+    el.style.transform=`rotate(${rot})`;
+    attachDrag(el);
+    mess.appendChild(el);
+  });
+
+  // 熊猫崽实时捣乱：定时往堆里扔垃圾
+  clearInterval(G.junkTimer); G.junkTimer=null;
+  if(L.junkEvery){
+    G.junkTimer=setInterval(spawnJunk,L.junkEvery);
+  }
+
+  // 限时
+  const tw=$('timer-wrap');
+  if(L.time){
+    G.timeMax=G.timeLeft=L.time;
+    tw.style.display='block'; tw.classList.remove('urgent');
+    $('timer-bar').style.width='100%';
+    G.timer=setInterval(()=>{
+      G.timeLeft--;
+      $('timer-bar').style.width=(G.timeLeft/G.timeMax*100)+'%';
+      if(G.timeLeft<=15){ tw.classList.add('urgent'); sfx.tick(); }
+      if(G.timeLeft<=0){ clearInterval(G.timer); levelFail(); }
+    },1000);
+  } else tw.style.display='none';
+
+  show('play');
+  requestAnimationFrame(markCoverage); // 屏幕可见后才能量 rect
+}
+
+/* ================= 遮挡与垃圾 ================= */
+function rectOverlap(a,b){
+  const w=Math.min(a.right,b.right)-Math.max(a.left,b.left);
+  const h=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
+  return (w>0&&h>0)?w*h:0;
+}
+function markCoverage(){
+  const items=[...document.querySelectorAll('#mess .item')]
+    .filter(el=>!el.dataset.done&&!el.classList.contains('dragging'));
+  const rects=items.map(el=>({el,r:el.getBoundingClientRect(),z:+el.style.zIndex||0}));
+  rects.forEach(a=>{
+    const area=a.r.width*a.r.height||1;
+    const covered=rects.some(b=>b!==a&&b.z>a.z&&rectOverlap(a.r,b.r)>area*0.22);
+    a.el.classList.toggle('covered',covered);
+    a.el.textContent=covered?'❓':a.el.dataset.emoji;
+  });
+}
+const JUNK=['🍬','🧻','🍪','🪃','🥜'];
+function spawnJunk(){
+  if(G.locked||!screens.play.classList.contains('active'))return;
+  const el=document.createElement('div'); el.className='item junk';
+  const emo=JUNK[Math.floor(Math.random()*JUNK.length)];
+  el.dataset.junk='1'; el.dataset.emoji=emo; el.textContent=emo;
+  el.style.left=(8+Math.random()*76)+'%';
+  el.style.top=(24+Math.random()*52)+'%';
+  el.style.zIndex=++G.zTop;
+  const rot=(Math.random()*30-15).toFixed(0)+'deg';
+  el.style.setProperty('--rot',rot);
+  el.style.transform=`translateY(-160px) rotate(-50deg)`;
+  el.style.opacity='0';
+  attachDrag(el);
+  $('mess').appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition='transform .45s cubic-bezier(.3,1.4,.5,1),opacity .2s ease';
+    el.style.transform=`rotate(${rot})`;
+    el.style.opacity='1';
+  }));
+  tone(520,.08,'triangle',.09); tone(300,.12,'sine',.08,.06);
+  const r=$('mess').getBoundingClientRect();
+  scorePop(r.left+parseFloat(el.style.left)/100*r.width+30,
+           r.top+parseFloat(el.style.top)/100*r.height,'🐼💨',true);
+  setTimeout(markCoverage,480);
+}
+function removeJunk(el){
+  el.dataset.done='1';
+  G.score+=30;
+  $('hud-score').textContent=G.score;
+  tone(980,.07,'square',.07);
+  const r=el.getBoundingClientRect();
+  scorePop(r.left+r.width/2,r.top,'+30',true);
+  el.style.transition='transform .35s ease,opacity .35s ease';
+  el.style.transform='translateY(40px) scale(.3)';
+  el.style.opacity='0';
+  setTimeout(()=>{el.remove();markCoverage();},360);
+}
+
+/* ================= 拖拽 ================= */
+function attachDrag(el){
+  el.addEventListener('pointerdown',e=>{
+    if(G.locked||el.dataset.done)return;
+    e.preventDefault();
+    ac(); // 解锁音频
+    if(el.classList.contains('covered')){
+      el.animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:260});
+      tone(200,.1,'sawtooth',.05);
+      toast('被压住了！先把上面的东西拿走');
+      return;
+    }
+    const rect=el.getBoundingClientRect();
+    const ox=e.clientX-rect.left, oy=e.clientY-rect.top;
+    const sx=e.clientX, sy=e.clientY;
+    const homeLeft=el.style.left, homeTop=el.style.top;
+    let moved=false, hotSlot=null;
+
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+    el.style.transition='none';
+
+    const onMove=ev=>{
+      const dx=ev.clientX-sx, dy=ev.clientY-sy;
+      if(Math.abs(dx)+Math.abs(dy)>6)moved=true;
+      if(!moved)return;
+      el.style.position='fixed';
+      el.style.left=(ev.clientX-ox)+'px';
+      el.style.top=(ev.clientY-oy)+'px';
+      el.style.transform='rotate(0deg) scale(1.15)';
+      const under=document.elementFromPoint(ev.clientX,ev.clientY);
+      const slot=under&&under.closest?under.closest('.slot'):null;
+      if(hotSlot&&hotSlot!==slot)hotSlot.classList.remove('hot');
+      hotSlot=(slot&&!slot.classList.contains('filled'))?slot:null;
+      if(hotSlot)hotSlot.classList.add('hot');
+    };
+    const onUp=ev=>{
+      el.removeEventListener('pointermove',onMove);
+      el.removeEventListener('pointerup',onUp);
+      el.removeEventListener('pointercancel',onUp);
+      // 先取指针下元素，再恢复 pointer-events，否则会取到物品自己
+      const under=document.elementFromPoint(ev.clientX,ev.clientY);
+      const slot=under&&under.closest?under.closest('.slot'):null;
+      el.classList.remove('dragging');
+      if(hotSlot)hotSlot.classList.remove('hot');
+
+      // 轻点：揭穿恶作剧 / 清垃圾
+      if(!moved){
+        el.style.transition='';
+        if(el.dataset.prank)revealPrank(el);
+        else if(el.dataset.junk)removeJunk(el);
+        return;
+      }
+
+      if(slot&&!slot.classList.contains('filled')&&slot.dataset.emoji===el.dataset.emoji&&!el.dataset.prank){
+        placeItem(el,slot,ev.clientX,ev.clientY);
+      }else{
+        if(slot){
+          slot.classList.add('reject');
+          setTimeout(()=>slot.classList.remove('reject'),420);
+          sfx.wrong();
+          resetCombo();
+          if(el.dataset.prank)toast('这东西好像不属于这个房间……轻点它试试！','prank');
+          else if(el.dataset.junk)toast('这是熊猫崽扔的垃圾，轻点清掉它！','prank');
+        }
+        flyHome(el,homeLeft,homeTop);
+        setTimeout(markCoverage,380);
+      }
+    };
+    el.addEventListener('pointermove',onMove);
+    el.addEventListener('pointerup',onUp);
+    el.addEventListener('pointercancel',onUp);
+  });
+}
+
+function flyHome(el,left,top){
+  const mess=$('mess').getBoundingClientRect();
+  el.style.transition='left .28s ease,top .28s ease,transform .28s ease';
+  el.style.position='fixed';
+  el.style.left=(mess.left+parseFloat(left)/100*mess.width)+'px';
+  el.style.top=(mess.top+parseFloat(top)/100*mess.height)+'px';
+  el.style.transform=`rotate(${el.style.getPropertyValue('--rot')})`;
+  const done=()=>{
+    el.style.transition='none';
+    el.style.position='absolute';
+    el.style.left=left; el.style.top=top;
+    requestAnimationFrame(()=>{el.style.transition=''});
+    el.removeEventListener('transitionend',done);
+  };
+  el.addEventListener('transitionend',done);
+  setTimeout(done,350);
+}
+
+function placeItem(el,slot,px,py){
+  el.dataset.done='1';
+  const r=slot.getBoundingClientRect();
+  el.style.transition='left .22s cubic-bezier(.2,.8,.3,1.2),top .22s cubic-bezier(.2,.8,.3,1.2),transform .22s ease,opacity .18s ease .16s';
+  el.style.left=(r.left+r.width/2-30)+'px';
+  el.style.top=(r.top+r.height/2-30)+'px';
+  el.style.transform='rotate(0deg) scale(.7)';
+  el.style.opacity='0';
+  setTimeout(()=>el.remove(),320);
+
+  // 连击
+  const now=performance.now();
+  G.combo=(now-G.comboAt<3500)?Math.min(G.combo+1,5):1;
+  G.comboAt=now;
+  G.maxCombo=Math.max(G.maxCombo,G.combo);
+  const pts=100*G.combo;
+  G.score+=pts;
+  $('hud-score').textContent=G.score;
+  sfx.snap(G.combo);
+
+  const chip=$('combo-chip');
+  if(G.combo>=2){ chip.textContent=`🔥 连击 ×${G.combo}`; chip.classList.add('on'); }
+  scorePop(px,py,`+${pts}${G.combo>=2?` ×${G.combo}`:''}`);
+
+  setTimeout(()=>{ slot.classList.add('filled'); },180);
+
+  setTimeout(markCoverage,340);
+
+  G.placed++;
+  if(G.placed>=G.need){
+    G.locked=true;
+    clearInterval(G.timer);
+    clearInterval(G.junkTimer);
+    setTimeout(levelClear,750);
+  }
+}
+
+function resetCombo(){ G.combo=0; $('combo-chip').classList.remove('on'); }
+
+function revealPrank(el){
+  el.dataset.done='1';
+  G.pranksFound++;
+  G.score+=250;
+  $('hud-score').textContent=G.score;
+  sfx.prank();
+  const r=el.getBoundingClientRect();
+  scorePop(r.left+r.width/2,r.top,'+250 揭穿！',true);
+  toast('🐼 '+el.dataset.prank,'prank');
+  el.style.transition='transform .5s ease,opacity .5s ease';
+  el.style.transform='translateY(-60px) rotate(360deg) scale(.4)';
+  el.style.opacity='0';
+  setTimeout(()=>{el.remove();markCoverage();},520);
+}
+
+function scorePop(x,y,text,isPrank){
+  const p=document.createElement('div');
+  p.className='score-pop'+(isPrank?' prank-pop':'');
+  p.textContent=text;
+  p.style.left=(x-20)+'px'; p.style.top=(y-40)+'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),850);
+}
+
+let toastTimer=null;
+function toast(msg,kind){
+  const t=$('toast');
+  t.textContent=msg;
+  t.className=kind==='prank'?'prank show':'show';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ================= 结算 ================= */
+function levelClear(){
+  const L=LEVELS[G.level];
+  let bonus=0;
+  if(L.time&&G.timeLeft>0){ bonus=G.timeLeft*5; G.score+=bonus; }
+  sfx.win();
+
+  const allPranks=G.pranksFound>=G.pranksAll;
+  const comboStar=G.maxCombo>=4;
+  const stars=1+(allPranks?1:0)+(comboStar?1:0);
+  G.results[G.level]={stars,score:G.score};
+  G.total+=G.score;
+
+  $('res-stars').innerHTML=[1,2,3].map(i=>`<span class="${i<=stars?'':'off'}">⭐</span>`).join('');
+  $('res-score').textContent=G.score;
+  $('res-rows').innerHTML=
+    `<div class="rrow"><span>物品归位</span><b>${G.need} / ${G.need}</b></div>`+
+    `<div class="rrow ${allPranks?'':'miss'}"><span>恶作剧揭穿 ${allPranks?'✓':'（漏掉了！）'}</span><b>${G.pranksFound} / ${G.pranksAll}</b></div>`+
+    `<div class="rrow ${comboStar?'':'miss'}"><span>最高连击 ${comboStar?'✓':'（×4 拿星）'}</span><b>×${G.maxCombo}</b></div>`+
+    (bonus?`<div class="rrow"><span>剩余时间奖励</span><b>+${bonus}</b></div>`:'');
+  $('btn-next').textContent=G.level>=LEVELS.length-1?'查看总成绩':'下一关';
+  show('result');
+}
+
+function levelFail(){
+  G.locked=true;
+  clearInterval(G.junkTimer);
+  sfx.fail();
+  show('fail');
+}
+
+function showFinal(){
+  $('fin-score').textContent=G.total;
+  $('fin-levels').innerHTML=LEVELS.map((L,i)=>{
+    const r=G.results[i]||{stars:0,score:0};
+    return `<div class="flv"><span class="fe">${L.emoji}</span><span>${L.name}</span><span class="fs">${'★'.repeat(r.stars)}${'☆'.repeat(3-r.stars)}</span></div>`;
+  }).join('');
+  show('final');
+}
+
+/* ================= 按钮 ================= */
+$('btn-start').onclick=()=>{ ac(); G.level=0; G.total=0; G.results=[]; showIntro(); };
+$('btn-go').onclick=()=>buildLevel();
+$('btn-retry').onclick=()=>{ G.total-= (G.results[G.level]?G.results[G.level].score:0); buildLevel(); };
+$('btn-replay').onclick=()=>{ G.total-=G.results[G.level].score; G.results[G.level]=null; buildLevel(); };
+$('btn-next').onclick=()=>{
+  if(G.level>=LEVELS.length-1){ showFinal(); }
+  else{ G.level++; showIntro(); }
+};
+$('btn-fail-retry').onclick=()=>buildLevel();
+$('btn-restart').onclick=()=>{ G.level=0; G.total=0; G.results=[]; showIntro(); };
+$('btn-mute').onclick=e=>{ muted=!muted; e.currentTarget.textContent=muted?'🔇':'🔊'; };
+
+document.addEventListener('gesturestart',e=>e.preventDefault());
+</script>
+
+</body>
+</html>

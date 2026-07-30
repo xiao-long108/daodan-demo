@@ -111,7 +111,7 @@
   .shop-buy:disabled{background:#C9BFA9;box-shadow:none;color:#fff}
   .shop-buy:active:not(:disabled){transform:translateY(2px);box-shadow:none}
   #bar{
-    position:absolute;left:0;right:0;top:24%;height:36px;z-index:30;pointer-events:none;
+    position:absolute;left:0;right:0;top:170px;height:34px;z-index:30;pointer-events:none;
     background:
       linear-gradient(180deg,#E9CD9C 0 8px,#C99A5C 8px 12px,#B07E42 12px);
     box-shadow:0 6px 10px rgba(28,49,34,.35), inset 0 1px 0 rgba(255,255,255,.5);
@@ -129,11 +129,15 @@
   }
   .cust .ring img{width:44px;height:44px;border-radius:50%;display:block;border:2px solid #fff}
   .cust .want{
-    display:flex;align-items:center;gap:3px;
+    position:relative;display:flex;align-items:center;gap:3px;
     background:#fff;border-radius:11px;padding:2px 7px;
     box-shadow:0 3px 6px rgba(28,49,34,.3);
     font-size:10.5px;font-weight:900;color:var(--persimmon-deep);
     font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .cust .want::before{
+    content:"";position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-bottom-color:#fff;border-top:none;
   }
   .cust .want img{height:22px}
   .cust.vip .want{background:linear-gradient(180deg,#FFF3C9,#FFE79A);box-shadow:0 0 0 2px var(--gold),0 3px 6px rgba(28,49,34,.3)}
@@ -360,7 +364,20 @@
   /* ---------- 厨房场景（2.5D 透视） ---------- */
   #kitchen{
     flex:1 1 auto;position:relative;overflow:hidden;
-    background:url('assets/kitchen_bg.jpg') center/cover no-repeat #3E6B4F;
+    background:#3E6B4F;
+  }
+  #kitchen .bg-top{
+    position:absolute;left:0;right:0;top:0;height:204px;z-index:0;
+    background:url('assets/story_shop.jpg') center 6%/cover no-repeat;
+    filter:blur(1.6px) saturate(.92);transform:scale(1.02);
+  }
+  #kitchen .bg-top::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(28,49,34,.18),transparent 32%,rgba(28,49,34,.15));
+  }
+  #kitchen .bg-bot{
+    position:absolute;left:0;right:0;top:204px;bottom:0;z-index:0;
+    background:url('assets/kitchen_bg.jpg') center 92%/cover no-repeat;
   }
   #kitchen .wall{
     position:absolute;left:0;right:0;top:0;height:25%;z-index:2;
@@ -412,11 +429,11 @@
   }
   .station:active{filter:brightness(.92)}
   .st-img{display:block;filter:drop-shadow(0 7px 7px rgba(28,49,34,.4))}
-  #wok0 .st-img,#wok1 .st-img{width:100px}
-  #board .st-img{width:96px}
-  #machine .st-img{width:76px}
-  #serve .st-img{width:122px}
-  #trash .st-img{width:58px}
+  #wok0 .st-img,#wok1 .st-img{width:112px}
+  #board .st-img{width:108px}
+  #machine .st-img{width:86px}
+  #serve .st-img{width:132px}
+  #trash .st-img{width:64px}
   .wok-items{
     position:absolute;left:50%;top:20%;transform:translateX(-50%);
     display:flex;gap:2px;align-items:center;z-index:4;font-size:26px;line-height:1;
@@ -546,7 +563,7 @@
     cursor:pointer;transition:filter .1s ease;
   }
   .ing:active{filter:brightness(.9)}
-  .ing .crate-img{width:60px;display:block;filter:drop-shadow(0 5px 5px rgba(28,49,34,.4))}
+  .ing .crate-img{width:68px;display:block;filter:drop-shadow(0 5px 5px rgba(28,49,34,.4))}
   .ing .ing-icon{
     position:absolute;top:-16px;left:50%;transform:translateX(-50%);
     height:38px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));z-index:2;
@@ -558,7 +575,7 @@
   .queuer img{width:26px;height:26px;border-radius:50%;box-shadow:0 2px 3px rgba(0,0,0,.35);border:1.5px solid #fff}
   .order .cust img{width:24px;height:24px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .order .oe img{height:36px}
-  #chef-img{display:block;height:94px;filter:drop-shadow(0 8px 8px rgba(28,49,34,.4))}
+  #chef-img{display:block;height:104px;filter:drop-shadow(0 8px 8px rgba(28,49,34,.4))}
   #chef.walking #chef-img{animation:chefBob .34s linear infinite}
   .hold img{height:22px}
   .bdg{position:absolute;right:-4px;bottom:-4px;font-size:12px;font-style:normal}
@@ -694,9 +711,10 @@
     <div id="rushbanner">📢 放学高峰！顶住！</div>
     <div id="fever-chip">🔥 狂热时间 10s</div>
     <div id="kitchen">
-      <div class="wall"></div>
+      <div class="bg-top"></div>
+      <div class="bg-bot"></div>
       <div id="bar"></div>
-      <div class="station" id="serve" data-x="50" data-y="19" style="left:50%;top:19%">
+      <div class="station" id="serve" data-x="50" data-y="19" style="left:50%;top:112px">
         <div class="st-body"><img class="st-img" src="assets/serve_counter.png" alt=""></div>
       </div>
       <div class="station stove" id="wok0" data-kind="wok" data-x="16" data-y="38" style="left:16%;top:38%">
@@ -715,14 +733,14 @@
         <div class="steam"><i></i><i></i><i></i></div>
         <div class="raid"><img class="re" src="assets/cub_pounce.png" alt="" style="width:88px">偷吃！连点赶走</div>
       </div>
-      <div class="station" id="board" data-kind="board" data-x="85" data-y="38" style="left:85%;top:38%">
+      <div class="station" id="board" data-kind="board" data-x="84" data-y="38" style="left:84%;top:38%">
         <div class="st-label">案板</div>
         <div class="st-body"><img class="st-img" src="assets/board.png" alt=""><div class="wok-items"></div></div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
         <div class="raid"><img class="re" src="assets/cub_pounce.png" alt="" style="width:88px">偷吃！连点赶走</div>
       </div>
-      <div class="station" id="machine" data-kind="machine" data-x="85" data-y="66" style="left:85%;top:66%">
+      <div class="station" id="machine" data-kind="machine" data-x="84" data-y="66" style="left:84%;top:66%">
         <div class="st-label">奶茶机</div>
         <div class="st-body"><img class="st-img" src="assets/machine.png" alt=""><div class="wok-items"></div></div>
         <div class="st-bar"><i></i></div>
@@ -1362,7 +1380,7 @@ function tick(){
 }
 
 /* ================= 订单 ================= */
-const CUST_SLOTS=[{x:13,y:16},{x:30,y:16},{x:70,y:16},{x:87,y:16}];
+const CUST_SLOTS=[{x:13,y:98},{x:30,y:98},{x:70,y:98},{x:87,y:98}];
 function wantHTML(o){
   return o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')+`¥${o.price}`;
 }
@@ -1379,7 +1397,7 @@ function spawnBoss(){
   const face='face_bear';
   const el=document.createElement('div'); el.className='cust vip boss';
   el.innerHTML=`<span class="ring"><img src="${A}${face}.png"></span><span class="want"></span>`;
-  el.style.left='108%'; el.style.top=CUST_SLOTS[slot].y+'%';
+  el.style.left='108%'; el.style.top=CUST_SLOTS[slot].y+'px';
   el.style.setProperty('--p',100);
   const o={id:++G.orderSeq,keys,vip:false,combo:true,boss:true,price,paid:0,total,deadline:performance.now()+total,el,slot,face,persona:null};
   el.querySelector('.want').innerHTML=wantHTML(o);
@@ -1420,7 +1438,7 @@ function spawnOrder(){
     `<span class="ring"><img src="${A}${face}.png">${P&&P.trait?`<span class="trait">${P.trait}</span>`:''}</span>`+
     `<span class="want"></span>`;
   el.style.left='108%';
-  el.style.top=CUST_SLOTS[slot].y+'%';
+  el.style.top=CUST_SLOTS[slot].y+'px';
   el.style.setProperty('--p',100);
   const o={id:++G.orderSeq,keys,vip,combo,price,paid:0,total,deadline:performance.now()+total,el,slot,face,persona:P};
   o.critic=!!(G.event&&G.event.id==='critic'&&o.id===G.criticId);

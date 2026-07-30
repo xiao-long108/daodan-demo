@@ -121,6 +121,42 @@
   .menu-chip .me{font-size:17px}
   .menu-chip .mp{color:var(--persimmon-deep)}
 
+  /* ---------- 剧情对话 ---------- */
+  .bub-list{display:flex;flex-direction:column;gap:7px;width:100%}
+  .bub{
+    display:flex;gap:9px;align-items:flex-start;text-align:left;
+    font-size:12.5px;line-height:1.6;color:var(--ink);
+    background:var(--paper);border-radius:14px;padding:8px 12px;
+  }
+  .bub .face{font-size:23px;flex:0 0 auto;line-height:1.2}
+  .bub b{display:block;font-size:10px;letter-spacing:.12em;margin-bottom:1px;color:var(--persimmon-deep)}
+  .bub.ma b{color:#A5588F}
+  .bub.pa b{color:var(--bamboo-deep)}
+  .mission{
+    width:100%;display:flex;gap:10px;align-items:center;text-align:left;
+    background:linear-gradient(90deg,rgba(240,180,41,.2),rgba(228,104,63,.14));
+    border:1.5px solid rgba(228,104,63,.4);border-radius:14px;padding:10px 13px;
+    font-size:13px;font-weight:800;color:var(--persimmon-deep);line-height:1.5;
+  }
+  .mission .mi{font-size:20px}
+  .mission small{display:block;font-size:11px;font-weight:600;color:var(--ink-soft)}
+
+  /* ---------- 修屋顶进度 ---------- */
+  .roof{width:100%;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--ink-soft)}
+  .roof-track{flex:1;height:10px;border-radius:5px;background:rgba(43,38,32,.12);overflow:hidden}
+  .roof-track i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--persimmon));border-radius:5px;transition:width .8s ease}
+  .roof b{color:var(--persimmon-deep);font-variant-numeric:tabular-nums}
+
+  /* ---------- 加急订单 ---------- */
+  .order.vip{border-color:var(--gold);background:linear-gradient(180deg,#FFF9E8,#FFF3D0);box-shadow:0 3px 10px rgba(240,180,41,.45)}
+  .order.vip .op{color:#B07C00}
+  .order.vip::after{
+    content:"加急 ×2";position:absolute;top:-9px;right:-6px;
+    background:var(--gold);color:#5C4300;font-size:9px;font-weight:900;
+    padding:2px 7px;border-radius:999px;letter-spacing:.08em;
+    box-shadow:0 2px 4px rgba(0,0,0,.2);
+  }
+
   /* ---------- HUD ---------- */
   #scr-play{background:#F4E7CF}
   #hud{
@@ -175,47 +211,72 @@
   @keyframes orderShake{0%,100%{transform:rotate(0)}30%{transform:rotate(-1.6deg)}70%{transform:rotate(1.6deg)}}
   .order .cust{position:absolute;top:-8px;left:-6px;font-size:19px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
 
-  /* ---------- 手持栏 ---------- */
-  #handbar{
-    flex:0 0 auto;display:flex;align-items:center;gap:10px;
-    padding:8px 14px;z-index:18;
-    background:linear-gradient(180deg,var(--bamboo-deep),var(--bamboo-dark));
-    color:rgba(255,255,255,.8);font-size:11px;font-weight:800;letter-spacing:.18em;
-  }
-  #hand{
-    width:52px;height:52px;border-radius:14px;flex:0 0 auto;
-    background:rgba(0,0,0,.32);border:2px dashed rgba(255,255,255,.3);
-    display:flex;align-items:center;justify-content:center;font-size:29px;
-    box-shadow:inset 0 3px 6px rgba(0,0,0,.35);
-  }
-  #hand.has{background:#FDF7E8;border-style:solid;border-color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.35)}
-  #hand-hint{flex:1;font-size:11px;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.75);line-height:1.5;text-align:left}
-  #trash{
-    width:44px;height:44px;border-radius:12px;border:none;cursor:pointer;flex:0 0 auto;
-    background:rgba(255,255,255,.12);font-size:20px;line-height:1;
-  }
-  #trash:active{background:rgba(210,91,74,.5)}
-
-  /* ---------- 灶台区 ---------- */
+  /* ---------- 厨房场景（俯视） ---------- */
   #kitchen{
-    flex:1 1 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;
-    padding:12px;align-content:center;position:relative;overflow-y:auto;
+    flex:1 1 auto;position:relative;overflow:hidden;
+    background-color:#D8B98C;
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,.16) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.16) 75%),
+      linear-gradient(45deg, rgba(255,255,255,.16) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.16) 75%);
+    background-size:52px 52px;
+    background-position:0 0,26px 26px;
+  }
+  #kitchen .wall{
+    position:absolute;left:0;right:0;top:0;height:12%;z-index:1;
     background:
-      linear-gradient(180deg, rgba(255,255,255,.4) 0, transparent 30%),
-      repeating-linear-gradient(0deg, transparent 0 44px, rgba(43,38,32,.07) 44px 46px),
-      repeating-linear-gradient(90deg, transparent 0 44px, rgba(43,38,32,.07) 44px 46px),
-      #DCE9DC;
+      repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 2px, transparent 2px 30px),
+      linear-gradient(180deg,var(--bamboo-deep),var(--bamboo));
+    box-shadow:0 4px 0 rgba(43,38,32,.25);
   }
   .station{
-    position:relative;border-radius:18px;background:#fff;
-    border:2px solid var(--paper-edge);box-shadow:0 5px 12px rgba(43,38,32,.16);
-    padding:9px 10px 11px;display:flex;flex-direction:column;align-items:center;gap:5px;
-    cursor:pointer;min-height:112px;transition:transform .1s ease;
+    position:absolute;transform:translate(-50%,-50%);z-index:5;
+    width:88px;border-radius:15px;background:#fff;
+    border:2px solid var(--paper-edge);box-shadow:0 5px 10px rgba(43,38,32,.28);
+    padding:6px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+    cursor:pointer;min-height:88px;transition:filter .1s ease;
   }
-  .station:active{transform:scale(.97)}
-  .st-label{font-size:10.5px;font-weight:800;letter-spacing:.2em;color:var(--ink-soft)}
-  .st-body{font-size:38px;line-height:1.15;min-height:44px;display:flex;align-items:center;gap:2px}
-  .st-body .small{font-size:26px}
+  .station:active{filter:brightness(.94)}
+  .station.serve-win{
+    background:linear-gradient(180deg,#4A3B2C,#3A2E22);border-color:#2C231A;
+    color:#fff;width:112px;min-height:76px;
+  }
+  .station.serve-win .st-label{color:var(--gold)}
+  .station.serve-win .st-hint{color:rgba(255,255,255,.65)}
+  .station.stove{
+    background:
+      radial-gradient(circle at 50% 58%, rgba(0,0,0,.25) 0 24%, transparent 25%),
+      linear-gradient(180deg,#5E6B70,#49545A);
+    border-color:#39434A;
+  }
+  .station.stove .st-label{color:#DCE6EA}
+  .station.stove .st-hint{color:#C3D2D8}
+  .station.wooden{background:linear-gradient(180deg,#E9CD9C,#DBB87E);border-color:#C7A163}
+
+  /* 熊猫大厨 */
+  #chef{
+    position:absolute;z-index:40;pointer-events:none;
+    transform:translate(-50%,-58%);left:50%;top:55%;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  #chef .hold{
+    width:36px;height:36px;border-radius:11px;margin-bottom:-4px;
+    background:linear-gradient(180deg,#fff,#F3EAD6);
+    border:2px solid var(--paper-edge);box-shadow:0 4px 8px rgba(43,38,32,.3);
+    display:none;align-items:center;justify-content:center;font-size:21px;line-height:1;
+  }
+  #chef.has .hold{display:flex}
+  #chef .pbody{position:relative;font-size:42px;line-height:1;display:inline-block;filter:drop-shadow(0 5px 4px rgba(43,38,32,.35))}
+  #chef .pbody::before{
+    content:"";position:absolute;left:50%;top:-7px;transform:translateX(-50%);
+    width:22px;height:12px;border-radius:8px 8px 3px 3px;background:#fff;
+    box-shadow:0 -5px 0 -1px #fff;
+  }
+  #chef.walking .pbody{animation:chefBob .32s linear infinite}
+  @keyframes chefBob{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(4deg) translateY(-4px)}}
+  #chef .shadow{width:34px;height:9px;border-radius:50%;background:rgba(43,38,32,.3);margin-top:-3px}
+  .st-label{font-size:9.5px;font-weight:800;letter-spacing:.16em;color:var(--ink-soft);white-space:nowrap}
+  .st-body{font-size:30px;line-height:1.15;min-height:36px;display:flex;align-items:center;gap:2px}
+  .st-body .small{font-size:21px}
   .st-bar{width:86%;height:8px;border-radius:4px;background:rgba(43,38,32,.12);overflow:hidden}
   .st-bar i{display:block;height:100%;width:0%;background:var(--gold)}
   .station.cooking .st-bar i{background:var(--persimmon)}
@@ -237,23 +298,19 @@
   @keyframes raidWob{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
   .station.raided .raid{display:flex}
 
-  /* ---------- 食材架 ---------- */
-  #shelf{
-    flex:0 0 auto;display:flex;gap:9px;justify-content:center;align-items:center;
-    padding:10px 12px 14px;
-    background:linear-gradient(180deg,#C9A06B,#B8895A);
-    box-shadow:0 -3px 10px rgba(43,38,32,.2);z-index:15;
-  }
+  /* ---------- 食材筐（场景内） ---------- */
   .ing{
-    width:56px;height:56px;border-radius:15px;
-    background:linear-gradient(180deg,#fff,#F3EAD6);
-    border:2px solid var(--paper-edge);box-shadow:0 4px 8px rgba(43,38,32,.28);
+    position:absolute;transform:translate(-50%,-50%);z-index:5;
+    width:54px;height:58px;border-radius:12px;
+    background:linear-gradient(180deg,#D7A86E,#BE8B50);
+    border:2px solid #9E7038;
+    box-shadow:inset 0 4px 6px rgba(0,0,0,.22),0 4px 8px rgba(43,38,32,.3);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    font-size:26px;line-height:1;cursor:pointer;gap:1px;
-    transition:transform .1s ease;
+    font-size:24px;line-height:1;cursor:pointer;gap:1px;
+    transition:filter .1s ease;
   }
-  .ing:active{transform:scale(.9)}
-  .ing small{font-size:8.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.05em}
+  .ing:active{filter:brightness(.9)}
+  .ing small{font-size:8.5px;font-weight:800;color:#FFF3DC;letter-spacing:.05em;text-shadow:0 1px 1px rgba(0,0,0,.3)}
 
   .flyer{
     position:fixed;z-index:900;pointer-events:none;
@@ -321,13 +378,30 @@
       <div class="tagline">手 忙 脚 乱 · 熊 猫 快 餐 店</div>
     </div>
     <div class="feature-row">
-      <span class="feature">📋 订单排队催命</span>
-      <span class="feature">🔪 切菜连点</span>
+      <span class="feature">🏃 大厨跑位</span>
+      <span class="feature">📋 订单催命</span>
       <span class="feature">🔥 火候烧焦</span>
       <span class="feature">🐼 熊猫崽偷吃</span>
+      <span class="feature">🏠 修屋顶任务线</span>
     </div>
     <button class="btn" id="btn-start">开店营业</button>
     <p class="demo-note">《捣蛋一家》同 IP 经营玩法 Demo · 3 个营业日<br>手机竖屏体验最佳，建议开声音</p>
+  </div>
+
+  <!-- 序章 -->
+  <div class="screen" id="scr-story">
+    <div class="intro-card">
+      <div class="intro-scene">🏠💥</div>
+      <div class="intro-kicker">序 章</div>
+      <div class="intro-name">屋顶破了个洞</div>
+      <div class="bub-list">
+        <div class="bub cub"><span class="face">🐼</span><span><b>熊猫崽</b>啊……我的球，好像穿过屋顶了。</span></div>
+        <div class="bub ma"><span class="face">🐼</span><span><b>熊猫妈</b>修屋顶要 <b style="display:inline;color:var(--bad)">¥800</b>！这个月的竹子钱全没了！</span></div>
+        <div class="bub pa"><span class="face">🐼</span><span><b>熊猫爸</b>别吵了。把门口棚子改成快餐店，全家上，三天把钱凑出来。</span></div>
+      </div>
+      <div class="mission"><span class="mi">🎯</span><span>三天赚够 ¥800，修好屋顶<small>闯祸的熊猫崽也得"帮忙"……如果那算帮忙的话</small></span></div>
+    </div>
+    <button class="btn" id="btn-story">接下任务</button>
   </div>
 
   <!-- 每日引导 -->
@@ -336,7 +410,8 @@
       <div class="intro-scene" id="intro-emoji">🌅</div>
       <div class="intro-kicker" id="intro-kicker">第 1 天</div>
       <div class="intro-name" id="intro-name">开业日</div>
-      <p class="intro-line" id="intro-line"></p>
+      <div class="bub-list" id="intro-story"></div>
+      <div class="mission" id="intro-mission"></div>
       <div class="menu-row" id="intro-menu"></div>
       <div class="rule-list" id="intro-rules"></div>
     </div>
@@ -357,43 +432,51 @@
       <span id="daylabel">90s</span>
     </div>
     <div id="orders"></div>
-    <div id="handbar">
-      <span>手上</span>
-      <div id="hand"></div>
-      <div id="hand-hint">点食材拿起 → 点灶台放下</div>
-      <button id="trash" title="丢弃">🗑️</button>
-    </div>
     <div id="kitchen">
-      <div class="station" id="wok0" data-kind="wok">
+      <div class="wall"></div>
+      <div class="station serve-win" id="serve" data-x="50" data-y="13" style="left:50%;top:13%">
+        <div class="st-label">出 餐 口</div>
+        <div class="st-body">🛎️</div>
+        <div class="st-hint">拿着菜来交单</div>
+      </div>
+      <div class="station stove" id="wok0" data-kind="wok" data-x="15" data-y="36" style="left:15%;top:36%">
         <div class="st-label">炒锅 一</div>
         <div class="st-body">🍳</div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
         <div class="raid"><span class="re">🐼</span>偷吃！连点赶走</div>
       </div>
-      <div class="station" id="wok1" data-kind="wok">
+      <div class="station stove" id="wok1" data-kind="wok" data-x="15" data-y="64" style="left:15%;top:64%">
         <div class="st-label">炒锅 二</div>
         <div class="st-body">🍳</div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
         <div class="raid"><span class="re">🐼</span>偷吃！连点赶走</div>
       </div>
-      <div class="station" id="board" data-kind="board">
+      <div class="station wooden" id="board" data-kind="board" data-x="85" data-y="36" style="left:85%;top:36%">
         <div class="st-label">案板</div>
         <div class="st-body">🔪</div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint"></div>
         <div class="raid"><span class="re">🐼</span>偷吃！连点赶走</div>
       </div>
-      <div class="station" id="machine" data-kind="machine">
+      <div class="station" id="machine" data-kind="machine" data-x="85" data-y="64" style="left:85%;top:64%">
         <div class="st-label">奶茶机</div>
         <div class="st-body">🫖</div>
         <div class="st-bar"><i></i></div>
         <div class="st-hint">点击制作</div>
         <div class="raid"><span class="re">🐼</span>偷吃！连点赶走</div>
       </div>
+      <div class="station wooden" id="trash" data-x="88" data-y="90" style="left:88%;top:90%;width:60px;min-height:60px">
+        <div class="st-label">垃圾桶</div>
+        <div class="st-body" style="font-size:24px;min-height:26px">🗑️</div>
+      </div>
+      <div id="chef">
+        <div class="hold"></div>
+        <span class="pbody">🐼</span>
+        <div class="shadow"></div>
+      </div>
     </div>
-    <div id="shelf"></div>
     <div id="toast"></div>
   </div>
 
@@ -405,6 +488,7 @@
       <div class="result-title" id="res-title">打烊！</div>
       <div class="result-score"><small id="res-goal">目标 ¥120</small><span id="res-cash">¥0</span></div>
       <div class="result-rows" id="res-rows"></div>
+      <div class="roof"><span>🏠 修屋顶</span><div class="roof-track"><i id="res-roof"></i></div><b id="res-rooftxt">¥0/800</b></div>
     </div>
     <div class="btn-col">
       <button class="btn" id="btn-next">下一天</button>
@@ -418,8 +502,14 @@
       <span class="c1">🐼</span><span class="hat">👨‍🍳</span><span class="c2">🐼</span>
     </div>
     <div class="result-card">
-      <div class="result-title">三天营业达标！</div>
-      <div class="result-score"><small>总营业额</small><span id="fin-cash">¥0</span></div>
+      <div class="result-title">屋顶修好了！</div>
+      <div class="result-score"><small>三天营业额</small><span id="fin-cash">¥0</span></div>
+      <div class="roof"><span>🏠 修屋顶</span><div class="roof-track"><i style="width:100%"></i></div><b>完工✓</b></div>
+      <div class="bub-list">
+        <div class="bub ma"><span class="face">🐼</span><span><b>熊猫妈</b>工人师傅收工了……新屋顶真漂亮。</span></div>
+        <div class="bub cub"><span class="face">🐼</span><span><b>熊猫崽</b>新屋顶真结实！我上去试试——</span></div>
+        <div class="bub pa"><span class="face">🐼</span><span><b>熊猫爸</b>（咔嚓一声）……明天，继续营业。</span></div>
+      </div>
     </div>
     <div class="pitch">
       <b>Demo 到此为止。</b>完整版规划：更多菜谱与厨房布局（火锅店/烧烤摊/甜品站）、
@@ -451,15 +541,28 @@ const RECIPES={
   grillfish:{emo:'🍢',name:'香烤鱼',price:50,type:'wok',needs:['fish_cut'],cookMs:7000,winMs:2200},
 };
 const DAYS=[
-  {name:'开业日',emoji:'🌅',time:90,goal:120,spawn:9000,patience:30000,
+  {name:'街坊开业日',emoji:'🌅',time:90,goal:120,spawn:9000,patience:30000,
    dishes:['milktea','friedrice'],shelf:['rice','egg'],raid:0,
-   line:'熊猫家的快餐店开张了！菜单简单，先把流程跑顺。'},
-  {name:'上菜谱',emoji:'📈',time:90,goal:260,spawn:7500,patience:26000,
+   mission:'今天要凑出修屋顶的定金 ¥120',
+   story:[
+     ['ma','街坊们听说咱家屋顶塌了，都来捧场——别丢人，先把奶茶和蛋炒饭卖明白。'],
+     ['pa','熊猫崽罚在家反省。今天店里应该……很太平。'],
+   ]},
+  {name:'放学高峰',emoji:'🎒',time:90,goal:260,spawn:7500,patience:26000,
    dishes:['milktea','friedrice','bamboopork'],shelf:['rice','egg','bamboo','meat'],raid:15000,
-   line:'笋片炒肉上架——竹笋要先切！而且熊猫崽发现店里有吃的了……'},
-  {name:'爆单日',emoji:'🔥',time:90,goal:420,spawn:6000,patience:22000,
+   mission:'木料钱 ¥260——放学的小朋友最爱笋片炒肉',
+   story:[
+     ['ma','隔壁竹叶小学放学，新菜"笋片炒肉"上架——竹笋一定要先在案板切好！'],
+     ['cub','我出来"帮忙"了！我就……闻一闻，就闻一闻！'],
+     ['pa','盯住他。他上次"闻一闻"，闻掉了半锅饭。'],
+   ]},
+  {name:'博主探店',emoji:'📹',time:90,goal:420,spawn:6000,patience:22000,
    dishes:['milktea','friedrice','bamboopork','grillfish'],shelf:['rice','egg','bamboo','meat','fish'],raid:11000,
-   line:'美食博主探店，客人挤爆了！烤鱼的火候窗口极短，熊猫崽也彻底疯了。'},
+   mission:'工钱尾款 ¥420——直播间正看着，千万别砸招牌',
+   story:[
+     ['ma','美食博主"竹子姐"来直播探店！招牌菜香烤鱼火候窗口极短，手一慢就焦！'],
+     ['cub','直播间三万人？那我更得让大家看看我能吃多快！'],
+   ]},
 ];
 const CUSTOMERS=['🧑','👵','👦','👧','🧔','👩','🐰','🦊'];
 const CHOP_HITS=6;
@@ -499,7 +602,7 @@ const sfx={
 
 /* ================= 状态 ================= */
 const $=id=>document.getElementById(id);
-const screens={title:$('scr-title'),intro:$('scr-intro'),play:$('scr-play'),result:$('scr-result'),final:$('scr-final')};
+const screens={title:$('scr-title'),story:$('scr-story'),intro:$('scr-intro'),play:$('scr-play'),result:$('scr-result'),final:$('scr-final')};
 function show(name){ Object.values(screens).forEach(s=>s.classList.remove('active')); screens[name].classList.add('active'); }
 const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -513,25 +616,57 @@ const G={
   loop:null,secTimer:null,
   nextSpawn:0,nextRaid:0,raidObj:null,
   over:false,
+  chefX:50,chefY:52,chefSeq:0,walkT:null,
 };
 
+/* ================= 大厨跑位 ================= */
+function walkTo(x,y,cb){
+  const chef=$('chef');
+  const dist=Math.hypot(x-G.chefX,y-G.chefY);
+  const seq=++G.chefSeq;
+  clearTimeout(G.walkT);
+  if(dist<1.5){ cb&&cb(); return; }
+  const dur=reduceMotion?0:Math.max(140,dist*10);
+  chef.querySelector('.pbody').style.transform=(x<G.chefX)?'scaleX(-1)':'';
+  G.chefX=x; G.chefY=y;
+  chef.style.transition=`left ${dur}ms linear, top ${dur}ms linear`;
+  chef.style.left=x+'%'; chef.style.top=y+'%';
+  chef.classList.add('walking');
+  G.walkT=setTimeout(()=>{
+    chef.classList.remove('walking');
+    if(seq===G.chefSeq&&!G.over)cb&&cb();
+  },dur+20);
+}
+function goDo(el,cb){
+  const x=+el.dataset.x, y=+el.dataset.y;
+  // 走到台前（朝场地中心偏一点，不站进灶台里）
+  walkTo(x+(50-x)*0.22,y+(52-y)*0.3,cb);
+}
+function centerEvt(el){
+  const r=el.getBoundingClientRect();
+  return {clientX:r.left+r.width/2,clientY:r.top+r.height/2};
+}
+
 /* ================= 引导 ================= */
+const WHO={cub:'熊猫崽',ma:'熊猫妈',pa:'熊猫爸'};
 function showIntro(){
   const D=DAYS[G.day];
   $('intro-emoji').textContent=D.emoji;
   $('intro-kicker').textContent=`第 ${G.day+1} 天 · 营业 ${D.time} 秒`;
   $('intro-name').textContent=D.name;
-  $('intro-line').textContent=D.line;
+  $('intro-story').innerHTML=D.story.map(([who,text])=>
+    `<div class="bub ${who}"><span class="face">🐼</span><span><b>${WHO[who]}</b>${text}</span></div>`).join('');
+  $('intro-mission').innerHTML=`<span class="mi">🎯</span><span>${D.mission}<small>屋顶进度 ¥${G.totalCash} / 800 · 本日目标 ¥${D.goal}</small></span>`;
   $('intro-menu').innerHTML=D.dishes.map(k=>{
     const r=RECIPES[k];
     return `<span class="menu-chip"><span class="me">${r.emo}</span>${r.name}<span class="mp">¥${r.price}</span></span>`;
   }).join('');
   const rules=[
-    ['📋',`营业额达到 <b>¥${D.goal}</b> 过关。客人耐心条走完会<b>摔门走人</b>！`],
-    ['👇','点食材拿在手上 → 点<b>炒锅</b>放入，配方凑齐自动开炒；🎋🐟要先放<b>案板连点切好</b>。'],
-    ['🔥','进度条变<b>绿</b>时点锅出菜——错过窗口就<b>烧焦</b>，还得点锅清理！'],
+    ['🏃',`点哪儿，熊猫大厨就<b>跑哪儿</b>——跑动要时间，路线就是策略！营业额到 <b>¥${D.goal}</b> 过关。`],
+    ['👇','点<b>食材筐</b>拿料 → 点<b>炒锅</b>放入，配方凑齐自动开炒；🎋🐟要先去<b>案板连点切好</b>。'],
+    ['🔥','进度条变<b>绿</b>时点锅出菜，错过就<b>烧焦</b>！做好的菜送到<b>出餐口</b>（或直接点订单卡）交单。'],
   ];
-  if(D.raid)rules.push(['🐼','熊猫崽会扑上灶台<b>偷吃</b>——连点 3 下赶走，慢了整锅被偷光！']);
+  if(D.raid)rules.push(['🐼','熊猫崽会扑上灶台<b>偷吃</b>——跑过去连点 3 下赶走，慢了整锅被偷光！']);
   $('intro-rules').innerHTML=rules.map(([i,t])=>`<div class="rule"><span class="ri">${i}</span><span>${t}</span></div>`).join('');
   show('intro');
 }
@@ -558,14 +693,30 @@ function buildDay(){
   renderWok(G.woks[0]); renderWok(G.woks[1]);
   renderBoard(); renderMachine();
 
-  // 食材架
-  $('shelf').innerHTML='';
-  D.shelf.forEach(id=>{
+  // 大厨回到场中央
+  G.chefX=50; G.chefY=52; G.chefSeq++;
+  clearTimeout(G.walkT);
+  const chef=$('chef');
+  chef.classList.remove('walking');
+  chef.style.transition='none';
+  chef.style.left='50%'; chef.style.top='52%';
+  chef.querySelector('.pbody').style.transform='';
+
+  // 食材筐（沿底边摆开）
+  document.querySelectorAll('#kitchen .ing').forEach(el=>el.remove());
+  const n=D.shelf.length;
+  D.shelf.forEach((id,i)=>{
     const ing=INGS[id];
     const el=document.createElement('div'); el.className='ing';
+    const x=n>1?12+i*(60/(n-1)):40;
+    el.dataset.x=x; el.dataset.y=90;
+    el.style.left=x+'%'; el.style.top='90%';
     el.innerHTML=`${ing.emo}<small>${ing.name}</small>`;
-    el.addEventListener('pointerdown',e=>{e.preventDefault();ac();takeIng(id,el);});
-    $('shelf').appendChild(el);
+    el.addEventListener('pointerdown',e=>{
+      e.preventDefault(); ac();
+      goDo(el,()=>takeIng(id,el));
+    });
+    $('kitchen').appendChild(el);
   });
 
   // 倒计时
@@ -681,13 +832,16 @@ function spawnOrder(){
   const D=DAYS[G.day];
   const key=D.dishes[Math.floor(Math.random()*D.dishes.length)];
   const r=RECIPES[key];
-  const total=D.patience*(0.9+Math.random()*0.3);
-  const el=document.createElement('div'); el.className='order';
+  const vip=G.day>0&&Math.random()<0.22;
+  const price=r.price*(vip?2:1);
+  const total=D.patience*(vip?0.65:1)*(0.9+Math.random()*0.3);
+  const el=document.createElement('div'); el.className='order'+(vip?' vip':'');
   el.innerHTML=
-    `<span class="cust">${CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)]}</span>`+
+    `<span class="cust">${vip?'🌟':CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)]}</span>`+
     `<span class="oe">${r.emo}</span><span class="on">${r.name}</span>`+
-    `<span class="op">¥${r.price}</span><span class="pat"><i></i></span>`;
-  const o={id:++G.orderSeq,key,total,deadline:performance.now()+total,el,patEl:el.querySelector('.pat i')};
+    `<span class="op">¥${price}</span><span class="pat"><i></i></span>`;
+  const o={id:++G.orderSeq,key,vip,price,total,deadline:performance.now()+total,el,patEl:el.querySelector('.pat i')};
+  if(vip)toast('🌟 加急订单！双倍价，但客人急脾气','warn');
   el.addEventListener('pointerdown',e=>{e.preventDefault();ac();serveOrder(o);});
   $('orders').appendChild(el);
   G.orders.push(o);
@@ -695,13 +849,25 @@ function spawnOrder(){
 }
 function serveOrder(o){
   if(G.over)return;
-  if(!G.hand||G.hand.kind!=='dish'){ shake(o.el); return; }
+  if(!G.hand||G.hand.kind!=='dish'){ shake(o.el); toast('先做好菜拿在手上，再来交单'); return; }
   if(G.hand.id!==o.key){ shake(o.el); sfx.wrong(); toast('客人点的不是这道菜！'); return; }
-  const r=RECIPES[o.key];
+  goDo($('serve'),()=>doServe(o));
+}
+function serveAtWindow(){
+  if(!G.hand||G.hand.kind!=='dish'){ shake($('serve')); toast('手上没有做好的菜'); return; }
+  // 自动交给等得最久的同菜客人
+  const o=G.orders.find(x=>x.key===G.hand.id);
+  if(!o){ shake($('serve')); sfx.wrong(); toast('没有客人点这道菜……先别做多'); return; }
+  doServe(o);
+}
+function doServe(o){
+  if(G.over)return;
+  if(!G.orders.includes(o)){ toast('😡 客人刚走……手再快点！','warn'); return; }
+  if(!G.hand||G.hand.kind!=='dish'||G.hand.id!==o.key)return;
   const ratio=Math.max(0,(o.deadline-performance.now())/o.total);
-  const tip=Math.round(r.price*0.5*ratio);
+  const tip=Math.round(o.price*0.5*ratio);
   const rect=o.el.getBoundingClientRect();
-  addCash(r.price+tip,rect.left+rect.width/2,rect.top+10,tip>0?`+¥${r.price} 小费¥${tip}`:`+¥${r.price}`);
+  addCash(o.price+tip,rect.left+rect.width/2,rect.top+10,tip>0?`+¥${o.price} 小费¥${tip}`:`+¥${o.price}`);
   G.served++;
   G.hand=null; renderHand();
   removeOrder(o);
@@ -723,36 +889,23 @@ function removeOrder(o){
 
 /* ================= 手 / 食材 ================= */
 function renderHand(){
-  const h=$('hand');
+  const chef=$('chef');
   if(G.hand){
     const emo=G.hand.kind==='dish'?RECIPES[G.hand.id].emo:INGS[G.hand.id].emo;
-    h.textContent=emo; h.classList.add('has');
-    $('hand-hint').textContent=G.hand.kind==='dish'?'点对应订单上菜！':handIngHint(G.hand.id);
+    chef.querySelector('.hold').textContent=emo;
+    chef.classList.add('has');
   }else{
-    h.textContent=''; h.classList.remove('has');
-    $('hand-hint').textContent='点食材拿起 → 点灶台放下';
+    chef.classList.remove('has');
   }
-}
-function handIngHint(id){
-  const ing=INGS[id];
-  if(ing.chopTo)return `「${ing.name}」要先放案板切！`;
-  return `把「${ing.name}」放进炒锅`;
 }
 function takeIng(id,el){
   if(G.over)return;
-  if(G.hand){ shake(el); toast('手上已经有东西了！先放下或丢掉'); return; }
+  if(G.hand){ shake(el); toast('手上已经有东西了！先放下或去垃圾桶丢掉'); return; }
   G.hand={kind:'ing',id};
   sfx.pick();
-  flyFromTo(el.getBoundingClientRect(),$('hand').getBoundingClientRect(),INGS[id].emo);
+  flyFromTo(el.getBoundingClientRect(),$('chef').getBoundingClientRect(),INGS[id].emo);
   setTimeout(renderHand,220);
 }
-$('trash').addEventListener('pointerdown',e=>{
-  e.preventDefault(); ac();
-  if(!G.hand)return;
-  G.hand=null; renderHand();
-  tone(300,.12,'sawtooth',.06);
-  scorePop(e.clientX,e.clientY,'已丢弃',true);
-});
 
 /* ================= 灶台交互 ================= */
 function stationTap(kind,e){
@@ -796,7 +949,7 @@ function wokTap(w,e){
       G.hand={kind:'dish',id:w.recipeKey};
       w.state='idle'; w.contents=[]; w.recipe=null;
       w.el.classList.remove('ready','cooking');
-      flyFromTo(w.el.getBoundingClientRect(),$('hand').getBoundingClientRect(),RECIPES[G.hand.id].emo);
+      flyFromTo(w.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),RECIPES[G.hand.id].emo);
       renderWok(w);
       setTimeout(renderHand,220);
       sfx.place();
@@ -877,7 +1030,7 @@ function boardTap(e){
   }else if(b.state==='done'){
     if(G.hand){ shake(b.el); toast('手上有东西，先放下！'); return; }
     G.hand={kind:'ing',id:INGS[b.ing].chopTo};
-    flyFromTo(b.el.getBoundingClientRect(),$('hand').getBoundingClientRect(),INGS[INGS[b.ing].chopTo].emo);
+    flyFromTo(b.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),INGS[INGS[b.ing].chopTo].emo);
     b.state='empty'; b.ing=null; b.hits=0;
     renderBoard();
     setTimeout(renderHand,220);
@@ -904,7 +1057,7 @@ function machineTap(e){
   }else if(m.state==='ready'){
     if(G.hand){ shake(m.el); toast('手上有东西，先放下！'); return; }
     G.hand={kind:'dish',id:'milktea'};
-    flyFromTo(m.el.getBoundingClientRect(),$('hand').getBoundingClientRect(),'🧋');
+    flyFromTo(m.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),'🧋');
     m.state='idle';
     m.el.classList.remove('ready');
     renderMachine();
@@ -994,6 +1147,8 @@ function endDay(){
     `<div class="rrow"><span>成功上菜</span><b>${G.served} 单</b></div>`+
     `<div class="rrow ${G.lost?'miss':''}"><span>流失客人 ${G.lost?'（0 流失拿星）':'✓'}</span><b>${G.lost} 人</b></div>`+
     `<div class="rrow ${G.burns?'miss':''}"><span>烧焦次数 ${G.burns?'（0 烧焦拿星）':'✓'}</span><b>${G.burns} 次</b></div>`;
+  $('res-roof').style.width=Math.min(100,G.totalCash/800*100)+'%';
+  $('res-rooftxt').textContent=`¥${G.totalCash}/800`;
   $('btn-next').style.display=pass?'':'none';
   $('btn-next').textContent=G.day>=DAYS.length-1?'查看总成绩':'下一天';
   show('result');
@@ -1028,13 +1183,25 @@ function showFinal(){
   show('final');
 }
 
-/* ================= 事件绑定 ================= */
-$('wok0').addEventListener('pointerdown',e=>{e.preventDefault();wokTap(G.woks[0],e);});
-$('wok1').addEventListener('pointerdown',e=>{e.preventDefault();wokTap(G.woks[1],e);});
-$('board').addEventListener('pointerdown',e=>{e.preventDefault();stationTap('board',e);});
-$('machine').addEventListener('pointerdown',e=>{e.preventDefault();stationTap('machine',e);});
+/* ================= 事件绑定（先跑位后操作） ================= */
+$('wok0').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('wok0'),()=>wokTap(G.woks[0],centerEvt($('wok0'))));});
+$('wok1').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('wok1'),()=>wokTap(G.woks[1],centerEvt($('wok1'))));});
+$('board').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('board'),()=>stationTap('board',centerEvt($('board'))));});
+$('machine').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('machine'),()=>stationTap('machine',centerEvt($('machine'))));});
+$('serve').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('serve'),serveAtWindow);});
+$('trash').addEventListener('pointerdown',e=>{
+  e.preventDefault(); ac();
+  goDo($('trash'),()=>{
+    if(!G.hand)return;
+    G.hand=null; renderHand();
+    tone(300,.12,'sawtooth',.06);
+    const c=centerEvt($('trash'));
+    scorePop(c.clientX,c.clientY,'已丢弃',true);
+  });
+});
 
-$('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; showIntro(); };
+$('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; show('story'); };
+$('btn-story').onclick=()=>showIntro();
 $('btn-go').onclick=()=>buildDay();
 $('btn-retry').onclick=()=>buildDay();
 $('btn-replay').onclick=()=>buildDay();

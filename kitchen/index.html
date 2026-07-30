@@ -145,6 +145,14 @@
   .cust.hurry{--rc:#D25B4A;animation:custShake .5s ease infinite}
   @keyframes custShake{0%,100%{transform:translate(-50%,-50%) rotate(0)}30%{transform:translate(-50%,-50%) rotate(-3deg)}70%{transform:translate(-50%,-50%) rotate(3deg)}}
   .cust.gone{opacity:0;pointer-events:none}
+  .station.locked .st-img{filter:grayscale(1) brightness(.68) drop-shadow(0 7px 7px rgba(28,49,34,.4))}
+  .station.locked .st-label{opacity:.55}
+  .pricepill{
+    position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);z-index:7;
+    background:var(--ink);color:var(--gold);font-size:10.5px;font-weight:800;
+    padding:4px 11px;border-radius:999px;white-space:nowrap;
+    box-shadow:0 3px 8px rgba(0,0,0,.4);
+  }
   .flame{
     position:absolute;left:50%;top:16%;transform:translateX(-50%);
     font-size:26px;line-height:1;display:none;pointer-events:none;z-index:3;
@@ -698,7 +706,7 @@
       <div class="result-title" id="res-title">打烊！</div>
       <div class="result-score"><small id="res-goal">目标 ¥120</small><span id="res-cash">¥0</span></div>
       <div class="result-rows" id="res-rows"></div>
-      <div class="roof"><span>🏠 修屋顶</span><div class="roof-track"><i id="res-roof"></i></div><b id="res-rooftxt">¥0/800</b></div>
+      <div class="roof"><span id="res-chname">🏗️ 修屋顶</span><div class="roof-track"><i id="res-roof"></i></div><b id="res-rooftxt">¥0/800</b></div>
       <div id="shop"></div>
     </div>
     <div class="btn-col">
@@ -711,7 +719,7 @@
   <div class="screen" id="scr-final">
     <div class="result-card">
       <img class="story-img" src="assets/story_shop.jpg" alt="">
-      <div class="result-title">屋顶修好了！</div>
+      <div class="result-title">三项工程全部完成！</div>
       <div class="result-score"><small>三天营业额</small><span id="fin-cash">¥0</span></div>
       <div class="roof"><span>🏠 修屋顶</span><div class="roof-track"><i style="width:100%"></i></div><b>完工✓</b></div>
       <div class="bub-list">
@@ -760,29 +768,66 @@ const FACES=['face_rabbit','face_fox','face_duck','face_sheep','face_cat','face_
 ['chef_idle','chef_run','chef_carry','chef_cheer','cub_pounce','cub_flee','stove','board','machine','serve_counter','trash','crate','kitchen_bg','logo','story_roof','story_shop','ing_rice','ing_egg','ing_meat','ing_bamboo','ing_fish','ing_cut','dish_milktea','dish_friedrice','dish_bamboopork','dish_grillfish','face_cub','face_mama_smile','face_mama_angry','face_mama_moved','face_papa_smile','face_papa_stern',...FACES]
   .forEach(n=>{const im=new Image();im.src=A+n+(n==='kitchen_bg'||n.startsWith('story_')?'.jpg':'.png');});
 const DAYS=[
-  {name:'街坊开业日',emoji:'🌅',time:90,goal:120,spawn:9000,patience:30000,
-   dishes:['milktea','friedrice'],shelf:['rice','egg'],raid:0,
-   mission:'今天要凑出修屋顶的定金 ¥120',
+  {name:'街坊开业日',emoji:'🌅',time:90,goal:120,spawn:9000,patience:30000,raid:0,
    story:[
-     ['ma','街坊们听说咱家屋顶塌了，都来捧场——别丢人，先把奶茶和蛋炒饭卖明白。'],
-     ['pa','熊猫崽罚在家反省。今天店里应该……很太平。'],
+     ['ma','街坊们听说咱家屋顶塌了，都来捧场——家底只有一口锅和一台奶茶机，先卖明白再谈别的。'],
+     ['pa','赚的钱除了修屋顶，剩下的攒起来添置家伙——灰着的灶台，攒够零花钱就能买下。'],
    ]},
-  {name:'放学高峰',emoji:'🎒',time:90,goal:260,spawn:7500,patience:26000,
-   dishes:['milktea','friedrice','bamboopork'],shelf:['rice','egg','bamboo','meat'],raid:15000,
-   mission:'木料钱 ¥260——放学的小朋友最爱笋片炒肉',
+  {name:'放学高峰',emoji:'🎒',time:90,goal:260,spawn:7500,patience:26000,raid:15000,
    story:[
-     ['ma','隔壁竹叶小学放学，新菜"笋片炒肉"上架——竹笋一定要先在案板切好！'],
+     ['ma','隔壁竹叶小学放学，客流要翻倍！设备跟不上就把钱攒出来买案板，能上新菜。'],
      ['cub','我出来"帮忙"了！我就……闻一闻，就闻一闻！'],
-     ['pa','盯住他。他上次"闻一闻"，闻掉了半锅饭。'],
    ]},
-  {name:'博主探店',emoji:'📹',time:90,goal:420,spawn:6000,patience:22000,
-   dishes:['milktea','friedrice','bamboopork','grillfish'],shelf:['rice','egg','bamboo','meat','fish'],raid:11000,
-   mission:'工钱尾款 ¥420——直播间正看着，千万别砸招牌',
+  {name:'博主探店',emoji:'📹',time:90,goal:420,spawn:6000,patience:22000,raid:11000,
    story:[
-     ['ma','美食博主"竹子姐"来直播探店！招牌菜香烤鱼火候窗口极短，手一慢就焦！'],
+     ['ma','美食博主"竹子姐"来直播探店！菜单越全、家伙越硬，直播间下单越多！'],
      ['cub','直播间三万人？那我更得让大家看看我能吃多快！'],
    ]},
 ];
+const LATER_STORIES=[
+  [['ma','回头客越来越多了，今天目标又涨了——设备该添的别省。'],['cub','我也是回头客！回来偷吃的客。']],
+  [['pa','隔壁街的店主来"考察"了三次。把招牌菜做稳，别给他学了去。'],['ma','火候！火候！']],
+  [['cub','听说凑够钱就换金字招牌？那上面能刻我的名字吗？'],['pa','刻你的欠账还差不多。']],
+];
+function dayCfg(n){
+  if(n<DAYS.length)return {...DAYS[n]};
+  const k=n-DAYS.length+1;
+  return {
+    name:`生意兴隆`,emoji:'🏮',time:90,
+    goal:Math.round((420+k*90)/10)*10,
+    spawn:Math.max(4200,6000-k*250),
+    patience:Math.max(16000,22000-k*700),
+    raid:Math.max(4500,11000-k*800),
+    story:LATER_STORIES[(n-DAYS.length)%LATER_STORIES.length],
+  };
+}
+const CHAPTERS=[
+  {name:'修屋顶',cost:800},
+  {name:'金字招牌',cost:1600},
+  {name:'门店扩建',cost:3200},
+];
+function chapterInfo(){
+  let acc=0;
+  for(let i=0;i<CHAPTERS.length;i++){
+    const c=CHAPTERS[i];
+    if(G.totalCash<acc+c.cost)return {idx:i,name:c.name,cost:c.cost,prog:G.totalCash-acc,done:false};
+    acc+=c.cost;
+  }
+  return {idx:CHAPTERS.length-1,name:'全部完成',cost:1,prog:1,done:true};
+}
+function curDishes(){
+  const d=['milktea','friedrice'];
+  if(G.own.board)d.push('bamboopork');
+  if(G.own.board&&G.gear.fishr)d.push('grillfish');
+  return d;
+}
+function curShelf(){
+  const sh=['rice','egg'];
+  if(G.own.board)sh.push('bamboo','meat');
+  if(G.own.board&&G.gear.fishr)sh.push('fish');
+  return sh;
+}
+const BUYABLE={wok1:{price:120,label:'炒锅二'},board:{price:150,label:'案板·解锁笋片炒肉'}};
 const CUSTOMERS=['🧑','👵','👦','👧','🧔','👩','🐰','🦊'];
 const CHOP_HITS=6;
 const BUFFS=[
@@ -820,6 +865,7 @@ const sfx={
   shoo(){ [523,784,1046].forEach((f,i)=>tone(f,.1,'triangle',.1,i*.06)); },
   wrong(){ tone(150,.16,'sawtooth',.08); },
   win(){ [523,659,784,1046].forEach((f,i)=>tone(f,.22,'sine',.13,i*.11)); },
+  unlock(){ [523,659,784].forEach((f,i)=>tone(f,.14,'triangle',.12,i*.08)); },
   fail(){ [330,262,196].forEach((f,i)=>tone(f,.3,'sawtooth',.07,i*.16)); },
   tick(){ tone(1200,.04,'square',.04); },
 };
@@ -844,7 +890,8 @@ const G={
   chefX:50,chefY:52,chefSeq:0,walkT:null,
   buff:null,streak:0,maxStreak:0,lastServe:0,
   rushState:0,rushAt:0,rushUntil:0,rushLost0:0,
-  wallet:0,gear:{fast:0,win:0,tip:0,apron:0},
+  wallet:0,gear:{fast:0,win:0,tip:0,apron:0,fishr:0},
+  own:{wok1:false,board:false},
   lastAdd:0,lastWallet:0,
 };
 
@@ -854,17 +901,19 @@ const GEAR=[
   {id:'win',  icon:'serve_counter', name:'保温出餐口', max:2, cost:[50,110],  desc:l=>`出锅完美窗口 +${0.6*(l+1)}s（永久）`},
   {id:'tip',  icon:'emo_coin',      name:'收银培训',   max:2, cost:[80,160],  desc:l=>`小费 +${25*(l+1)}%（永久）`},
   {id:'apron',icon:'trash',         name:'耐脏围裙',   max:1, cost:[40],      desc:l=>'清理烧焦不再扣钱'},
+  {id:'fishr',icon:'dish_grillfish',name:'菜谱·香烤鱼',max:1,cost:[250],desc:l=>'解锁 ¥50 高价菜（需先购入案板）',need:'board'},
 ];
 function renderShop(){
   const shop=$('shop');
   shop.innerHTML=`<div class="shop-head"><span>🛠️ 打烊商店 · 永久升级</span><b>零花钱 ¥${G.wallet}</b></div>`+
     GEAR.map(g=>{
       const lv=G.gear[g.id], maxed=lv>=g.max, cost=maxed?0:g.cost[lv];
+      const gated=g.need&&!G.own[g.need];
       return `<div class="shop-row">
         <img src="${A}${g.icon}.png">
         <span class="si"><b>${g.name}</b><small>${g.desc(maxed?lv-1:lv)}</small></span>
         <span class="lv">${'★'.repeat(lv)}${'☆'.repeat(g.max-lv)}</span>
-        <button class="shop-buy" data-gear="${g.id}" ${maxed||G.wallet<cost?'disabled':''}>${maxed?'已满级':'¥'+cost}</button>
+        <button class="shop-buy" data-gear="${g.id}" ${maxed||gated||G.wallet<cost?'disabled':''}>${maxed?'已购':gated?'缺案板':'¥'+cost}</button>
       </div>`;
     }).join('');
   shop.querySelectorAll('.shop-buy').forEach(b=>{
@@ -932,14 +981,15 @@ function centerEvt(el){
 /* ================= 引导 ================= */
 const WHO={cub:['熊猫崽','face_cub'],ma:['熊猫妈','face_mama_smile'],pa:['熊猫爸','face_papa_smile']};
 function showIntro(){
-  const D=DAYS[G.day];
+  const D=dayCfg(G.day);
   $('intro-emoji').textContent=D.emoji;
   $('intro-kicker').textContent=`第 ${G.day+1} 天 · 营业 ${D.time} 秒`;
   $('intro-name').textContent=D.name;
   $('intro-story').innerHTML=D.story.map(([who,text])=>
     `<div class="bub ${who}"><img class="face-img" src="${A}${WHO[who][1]}.png"><span><b>${WHO[who][0]}</b>${text}</span></div>`).join('');
-  $('intro-mission').innerHTML=`<span class="mi">🎯</span><span>${D.mission}<small>屋顶进度 ¥${G.totalCash} / 800 · 本日目标 ¥${D.goal}</small></span>`;
-  $('intro-menu').innerHTML=D.dishes.map(k=>{
+  const ch=chapterInfo();
+  $('intro-mission').innerHTML=`<span class="mi">🎯</span><span>本日目标 ¥${D.goal}<small>${ch.name}进度 ¥${ch.prog}/${ch.cost} · 超出目标的钱＝零花钱，拿去买设备和菜谱</small></span>`;
+  $('intro-menu').innerHTML=curDishes().map(k=>{
     const r=RECIPES[k];
     return `<span class="menu-chip"><span class="me">${r.emo}</span>${r.name}<span class="mp">¥${r.price}</span></span>`;
   }).join('');
@@ -949,14 +999,66 @@ function showIntro(){
     ['🔥','变绿就出锅，<b>越早出越完美（+¥8）</b>，拖过头<b>烧焦</b>！菜送<b>出餐口</b>或点订单卡交单。'],
   ];
   if(D.raid)rules.push(['🐼','熊猫崽会扑上灶台<b>偷吃</b>——跑过去连点 3 下赶走，慢了整锅被偷光！']);
+  rules.push(['🛠️','<b>灰着的设备点击购入</b>（花零花钱）：买案板上新菜、买二号锅翻产能——店会越开越大！']);
   rules.push(['⚡','开工前<b>三选一今日加成</b>；营业中段有<b>放学高峰</b>，顶住不丢单奖 ¥50；连续快速上菜吃<b>连击奖金</b>！']);
   $('intro-rules').innerHTML=rules.map(([i,t])=>`<div class="rule"><span class="ri">${i}</span><span>${t}</span></div>`).join('');
   show('intro');
 }
 
+/* ================= 成长购置 ================= */
+function refreshMenuboard(){
+  $('menuboard').innerHTML='<b>本日菜单</b>'+curDishes().map(k=>`<span class="mrow"><img src="${A}${RECIPES[k].img}.png" style="height:16px;vertical-align:middle"><small style="font-size:8px"> ¥${RECIPES[k].price}</small></span>`).join('');
+}
+function rebuildCrates(){
+  document.querySelectorAll('#kitchen .ing').forEach(el=>el.remove());
+  const SH=curShelf(); const n=SH.length;
+  SH.forEach((id,i)=>{
+    const ing=INGS[id];
+    const el=document.createElement('div'); el.className='ing';
+    const x=n>1?12+i*(60/(n-1)):40;
+    el.dataset.x=x; el.dataset.y=90;
+    el.style.left=x+'%'; el.style.top='90%';
+    el.style.setProperty('--sc',depthScale(90));
+    el.style.transform=`translate(-50%,-50%) scale(var(--sc))`;
+    el.style.zIndex=10+90;
+    el.innerHTML=`<img class="ing-icon" src="${A}${ing.img}.png"><img class="crate-img" src="${A}crate.png"><small>${ing.name}</small>`;
+    el.addEventListener('pointerdown',e=>{
+      e.preventDefault(); ac();
+      goDo(el,()=>takeIng(id,el));
+    });
+    $('kitchen').appendChild(el);
+  });
+}
+function applyLocks(){
+  ['wok1','board'].forEach(id=>{
+    const el=$(id), owned=G.own[id];
+    el.classList.toggle('locked',!owned);
+    let pp=el.querySelector('.pricepill');
+    if(!owned){
+      if(!pp){ pp=document.createElement('span'); pp.className='pricepill'; el.appendChild(pp); }
+      pp.textContent=`🔒 ¥${BUYABLE[id].price} 购入`;
+    }else if(pp)pp.remove();
+  });
+}
+function tryBuy(id){
+  const b=BUYABLE[id];
+  if(G.own[id])return;
+  if(G.wallet<b.price){
+    shake($(id)); sfx.wrong();
+    toast(`零花钱不够（需 ¥${b.price}）——超出当日目标的营业额才算零花钱！`);
+    return;
+  }
+  G.wallet-=b.price; G.own[id]=true;
+  applyLocks(); sfx.unlock();
+  const r=$(id).getBoundingClientRect();
+  scorePop(r.left+r.width/2,r.top,`🎉 ${b.label} 到货！`,true);
+  if(id==='board'){ rebuildCrates(); refreshMenuboard(); toast('🥡 新菜「笋片炒肉」上架，竹笋鲜肉已补货！','warn'); }
+  else toast(`🛠️ ${b.label}开火了！产能翻倍`,'warn');
+}
+
 /* ================= 搭建营业日 ================= */
 function buildDay(){
-  const D=DAYS[G.day];
+  const D=dayCfg(G.day);
   G.cash=0; G.hands=[null,null]; G.orders=[]; G.orderSeq=0;
   G.served=0; G.lost=0; G.burns=0;
   G.over=false; G.raidObj=null;
@@ -998,27 +1100,10 @@ function buildDay(){
   $('serve').style.zIndex=34; // 出餐口立在柜台前景
 
   // 菜单板（后墙装饰，随当日菜单变化）
-  $('menuboard').innerHTML='<b>本日菜单</b>'+D.dishes.map(k=>`<span class="mrow"><img src="${A}${RECIPES[k].img}.png" style="height:16px;vertical-align:middle"><small style="font-size:8px"> ¥${RECIPES[k].price}</small></span>`).join('');
+  refreshMenuboard();
 
-  // 食材筐（沿底边摆开）
-  document.querySelectorAll('#kitchen .ing').forEach(el=>el.remove());
-  const n=D.shelf.length;
-  D.shelf.forEach((id,i)=>{
-    const ing=INGS[id];
-    const el=document.createElement('div'); el.className='ing';
-    const x=n>1?12+i*(60/(n-1)):40;
-    el.dataset.x=x; el.dataset.y=90;
-    el.style.left=x+'%'; el.style.top='90%';
-    el.style.setProperty('--sc',depthScale(90));
-    el.style.transform=`translate(-50%,-50%) scale(var(--sc))`;
-    el.style.zIndex=10+90;
-    el.innerHTML=`<img class="ing-icon" src="${A}${ing.img}.png"><img class="crate-img" src="${A}crate.png"><small>${ing.name}</small>`;
-    el.addEventListener('pointerdown',e=>{
-      e.preventDefault(); ac();
-      goDo(el,()=>takeIng(id,el));
-    });
-    $('kitchen').appendChild(el);
-  });
+  rebuildCrates();
+  applyLocks();
 
   // 倒计时
   G.timeMax=G.timeLeft=D.time;
@@ -1052,7 +1137,7 @@ function mkWok(id){
 function tick(){
   if(G.over)return;
   const now=performance.now();
-  const D=DAYS[G.day];
+  const D=dayCfg(G.day);
 
   // 放学高峰事件
   if(G.rushState===0&&now>=G.rushAt){
@@ -1148,7 +1233,7 @@ function tick(){
     toast('🐼 被偷吃光了！手要快！','warn');
     sfx.angry();
     G.raidObj=null;
-    G.nextRaid=now+DAYS[G.day].raid*(0.9+Math.random()*0.5);
+    G.nextRaid=now+dayCfg(G.day).raid*(0.9+Math.random()*0.5);
   }
 }
 
@@ -1158,19 +1243,19 @@ function wantHTML(o){
   return o.keys.map(k=>`<img src="${A}${RECIPES[k].img}.png">`).join('')+`¥${o.price}`;
 }
 function spawnOrder(){
-  const D=DAYS[G.day];
+  const D=dayCfg(G.day);
   const slot=CUST_SLOTS.findIndex((_,i)=>!G.orders.some(o=>o.slot===i));
   if(slot<0)return;
   const vip=G.day>0&&Math.random()<0.2;
   const combo=!vip&&G.day>0&&Math.random()<0.18;
-  let keys=[D.dishes[Math.floor(Math.random()*D.dishes.length)]];
+  let keys=[curDishes()[Math.floor(Math.random()*curDishes().length)]];
   // 避免同一道菜扎堆：已有两人在等它就换一道
   if(G.orders.filter(o=>o.keys.includes(keys[0])).length>=2){
-    const alt=D.dishes.filter(k=>k!==keys[0]);
+    const alt=curDishes().filter(k=>k!==keys[0]);
     if(alt.length)keys[0]=alt[Math.floor(Math.random()*alt.length)];
   }
   if(combo){
-    const rest=D.dishes.filter(k=>k!==keys[0]);
+    const rest=curDishes().filter(k=>k!==keys[0]);
     keys.push(rest[Math.floor(Math.random()*rest.length)]);
   }
   const base=keys.reduce((s,k)=>s+RECIPES[k].price,0);
@@ -1335,7 +1420,7 @@ function stationTap(kind,e){
       sfx.shoo();
       scorePop(e.clientX,e.clientY,'赶走了！',true);
       G.raidObj=null;
-      G.nextRaid=performance.now()+DAYS[G.day].raid*(0.9+Math.random()*0.5);
+      G.nextRaid=performance.now()+dayCfg(G.day).raid*(0.9+Math.random()*0.5);
     }
     return;
   }
@@ -1379,7 +1464,7 @@ function wokTap(w,e){
     return;
   }
   // idle：从托盘里挑一件能和锅里配成菜的
-  const D=DAYS[G.day];
+  const D=dayCfg(G.day);
   const ingIdxs=G.hands.map((h,i)=>h&&h.kind==='ing'?i:-1).filter(i=>i>=0);
   if(!ingIdxs.length){ if(handItems().length)shake(w.el); return; }
   let pick=-1;
@@ -1387,7 +1472,7 @@ function wokTap(w,e){
     const cid=G.hands[i].id;
     if(INGS[cid].chopTo)continue;
     const tryC=[...w.contents,cid];
-    const ok=D.dishes.some(k=>{
+    const ok=curDishes().some(k=>{
       const r2=RECIPES[k];
       if(r2.type!=='wok')return false;
       const pool=[...r2.needs];
@@ -1405,7 +1490,7 @@ function wokTap(w,e){
   renderHand();
   sfx.place();
   // 配方凑齐→开炒
-  const done=D.dishes.find(k=>{
+  const done=curDishes().find(k=>{
     const r=RECIPES[k];
     if(r.type!=='wok')return false;
     return r.needs.length===w.contents.length&&r.needs.every(n=>{
@@ -1504,10 +1589,8 @@ function renderMachine(){
 
 /* ================= 熊猫崽突袭 ================= */
 function startRaid(now){
-  const cands=[
-    {kind:'wok',el:G.woks[0].el,ref:G.woks[0]},
-    {kind:'wok',el:G.woks[1].el,ref:G.woks[1]},
-  ];
+  const cands=[{kind:'wok',el:G.woks[0].el,ref:G.woks[0]}];
+  if(G.own.wok1)cands.push({kind:'wok',el:G.woks[1].el,ref:G.woks[1]});
   if(G.board.state!=='empty')cands.push({kind:'board',el:G.board.el,ref:G.board});
   if(G.machine.state!=='idle')cands.push({kind:'machine',el:G.machine.el,ref:G.machine});
   // 优先偷有东西的锅
@@ -1562,20 +1645,23 @@ function toast(msg,kind){
 function endDay(){
   G.over=true;
   clearInterval(G.loop); clearInterval(G.secTimer);
-  const D=DAYS[G.day];
+  const D=dayCfg(G.day);
   const pass=G.cash>=D.goal;
   const stars=pass?1+(G.lost===0?1:0)+(G.burns===0?1:0):0;
+  const chBefore=chapterInfo();
   if(pass){
     const roofAdd=Math.min(G.cash,D.goal), walletAdd=Math.max(0,G.cash-D.goal);
     G.totalCash+=roofAdd; G.wallet+=walletAdd;
     G.lastAdd=roofAdd; G.lastWallet=walletAdd;
     sfx.win();
   } else { G.lastAdd=0; G.lastWallet=0; sfx.fail(); }
+  const chNow=chapterInfo();
+  const chDone=pass&&(chNow.idx>chBefore.idx||(chNow.done&&!chBefore.done));
 
   $('res-stars').innerHTML=pass
     ?[1,2,3].map(i=>`<span class="${i<=stars?'':'off'}">⭐</span>`).join('')
     :'😵';
-  $('res-title').textContent=pass?'达标打烊！':'营业额不达标…';
+  $('res-title').textContent=chDone?`🎉 ${CHAPTERS[chBefore.idx].name}完成！`:(pass?'达标打烊！':'营业额不达标…');
   $('res-goal').textContent=`目标 ¥${D.goal}`;
   $('res-cash').textContent='¥'+G.cash;
   $('res-rows').innerHTML=
@@ -1584,11 +1670,13 @@ function endDay(){
     `<div class="rrow ${G.burns?'miss':''}"><span>烧焦次数 ${G.burns?'（0 烧焦拿星）':'✓'}</span><b>${G.burns} 次</b></div>`+
     `<div class="rrow"><span>最高连击 / 完美出锅</span><b>×${G.maxStreak} / ${G.perfects}次</b></div>`+
     (pass&&G.cash>D.goal?`<div class="rrow"><span>超额营业 → 零花钱</span><b>+¥${G.cash-D.goal}</b></div>`:'');
-  $('res-roof').style.width=Math.min(100,G.totalCash/800*100)+'%';
-  $('res-rooftxt').textContent=`¥${G.totalCash}/800`;
+  const ch=chapterInfo();
+  $('res-chname').textContent=ch.done?'🏆 三项工程全完成':`🏗️ ${ch.name}`;
+  $('res-roof').style.width=Math.min(100,ch.prog/ch.cost*100)+'%';
+  $('res-rooftxt').textContent=ch.done?'完工':`¥${ch.prog}/${ch.cost}`;
   if(pass)renderShop(); else $('shop').innerHTML='';
   $('btn-next').style.display=pass?'':'none';
-  $('btn-next').textContent=G.day>=DAYS.length-1?'查看总成绩':'下一天';
+  $('btn-next').textContent=chapterInfo().done?'查看总成绩':'下一天';
   show('result');
   if(pass)runConfetti();
 }
@@ -1623,8 +1711,8 @@ function showFinal(){
 
 /* ================= 事件绑定（先跑位后操作） ================= */
 $('wok0').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('wok0'),()=>wokTap(G.woks[0],centerEvt($('wok0'))));});
-$('wok1').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('wok1'),()=>wokTap(G.woks[1],centerEvt($('wok1'))));});
-$('board').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('board'),()=>stationTap('board',centerEvt($('board'))));});
+$('wok1').addEventListener('pointerdown',e=>{e.preventDefault();ac();if(!G.own.wok1){tryBuy('wok1');return;}goDo($('wok1'),()=>wokTap(G.woks[1],centerEvt($('wok1'))));});
+$('board').addEventListener('pointerdown',e=>{e.preventDefault();ac();if(!G.own.board){tryBuy('board');return;}goDo($('board'),()=>stationTap('board',centerEvt($('board'))));});
 $('machine').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('machine'),()=>stationTap('machine',centerEvt($('machine'))));});
 $('serve').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('serve'),serveAtWindow);});
 $('trash').addEventListener('pointerdown',e=>{
@@ -1639,16 +1727,16 @@ $('trash').addEventListener('pointerdown',e=>{
   });
 });
 
-$('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0}; show('story'); };
+$('btn-start').onclick=()=>{ ac(); G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0,fishr:0}; G.own={wok1:false,board:false}; show('story'); };
 $('btn-story').onclick=()=>showIntro();
 $('btn-go').onclick=()=>showBuffs();
 $('btn-retry').onclick=()=>buildDay();
 $('btn-replay').onclick=()=>{ G.totalCash-=G.lastAdd||0; G.wallet=Math.max(0,G.wallet-(G.lastWallet||0)); G.lastAdd=0; G.lastWallet=0; buildDay(); };
 $('btn-next').onclick=()=>{
-  if(G.day>=DAYS.length-1)showFinal();
+  if(chapterInfo().done)showFinal();
   else{ G.day++; showIntro(); }
 };
-$('btn-restart').onclick=()=>{ G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0}; showIntro(); };
+$('btn-restart').onclick=()=>{ G.day=0; G.totalCash=0; G.wallet=0; G.gear={fast:0,win:0,tip:0,apron:0,fishr:0}; G.own={wok1:false,board:false}; showIntro(); };
 $('btn-mute').onclick=e=>{ muted=!muted; e.currentTarget.textContent=muted?'🔇':'🔊'; };
 
 document.addEventListener('gesturestart',e=>e.preventDefault());

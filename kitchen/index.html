@@ -110,6 +110,11 @@
   }
   .shop-buy:disabled{background:#C9BFA9;box-shadow:none;color:#fff}
   .shop-buy:active:not(:disabled){transform:translateY(2px);box-shadow:none}
+  .coinfly{
+    position:fixed;width:22px;height:22px;z-index:960;pointer-events:none;
+    transition:left .45s cubic-bezier(.3,.7,.4,1),top .45s cubic-bezier(.3,.7,.4,1),transform .45s ease,opacity .45s ease;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));
+  }
   #rushbanner{
     position:absolute;left:50%;top:34%;transform:translateX(-50%) scale(0);z-index:210;
     background:linear-gradient(180deg,var(--persimmon),var(--persimmon-deep));color:#fff;
@@ -360,7 +365,7 @@
     display:flex;flex-direction:column;align-items:center;
   }
   #chef .hold{
-    width:34px;height:34px;border-radius:11px;margin-bottom:2px;
+    min-width:34px;height:34px;border-radius:11px;margin-bottom:2px;padding:0 5px;gap:3px;
     background:linear-gradient(180deg,#fff,#F3EAD6);
     border:2px solid var(--paper-edge);box-shadow:0 4px 8px rgba(43,38,32,.3);
     display:none;align-items:center;justify-content:center;font-size:20px;line-height:1;
@@ -788,7 +793,8 @@ const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 const G={
   day:0,totalCash:0,cash:0,
-  hand:null,            // {kind:'ing'|'dish', id}
+  hands:[null,null],    // 托盘两格 [{kind,id}]
+  perfects:0,
   orders:[],orderSeq:0,
   served:0,lost:0,burns:0,
   woks:[],board:null,machine:null,
@@ -859,7 +865,7 @@ function walkTo(x,y,cb){
   const seq=++G.chefSeq;
   clearTimeout(G.walkT);
   if(dist<1.5){ cb&&cb(); return; }
-  const dur=reduceMotion?0:Math.max(140,dist*10);
+  const dur=reduceMotion?0:Math.max(70,dist*3.5);
   chef.querySelector('.flip').style.transform=(x<G.chefX)?'scaleX(-1)':'';
   G.chefX=x; G.chefY=y;
   chef.style.transition=`left ${dur}ms linear, top ${dur}ms linear, transform ${dur}ms linear`;
@@ -899,9 +905,9 @@ function showIntro(){
     return `<span class="menu-chip"><span class="me">${r.emo}</span>${r.name}<span class="mp">¥${r.price}</span></span>`;
   }).join('');
   const rules=[
-    ['🏃',`点哪儿，熊猫大厨就<b>跑哪儿</b>——跑动要时间，路线就是策略！营业额到 <b>¥${D.goal}</b> 过关。`],
+    ['🏃',`点哪儿去哪儿，营业额到 <b>¥${D.goal}</b> 过关；<b>托盘能拿两样</b>——一趟带齐米饭+鸡蛋，少跑冤枉路！`],
     ['👇','点<b>食材筐</b>拿料 → 点<b>炒锅</b>放入，配方凑齐自动开炒；🎋🐟要先去<b>案板连点切好</b>。'],
-    ['🔥','进度条变<b>绿</b>时点锅出菜，错过就<b>烧焦</b>！做好的菜送到<b>出餐口</b>（或直接点订单卡）交单。'],
+    ['🔥','变绿就出锅，<b>越早出越完美（+¥8）</b>，拖过头<b>烧焦</b>！菜送<b>出餐口</b>或点订单卡交单。'],
   ];
   if(D.raid)rules.push(['🐼','熊猫崽会扑上灶台<b>偷吃</b>——跑过去连点 3 下赶走，慢了整锅被偷光！']);
   rules.push(['⚡','开工前<b>三选一今日加成</b>；营业中段有<b>放学高峰</b>，顶住不丢单奖 ¥50；连续快速上菜吃<b>连击奖金</b>！']);
@@ -912,7 +918,7 @@ function showIntro(){
 /* ================= 搭建营业日 ================= */
 function buildDay(){
   const D=DAYS[G.day];
-  G.cash=0; G.hand=null; G.orders=[]; G.orderSeq=0;
+  G.cash=0; G.hands=[null,null]; G.orders=[]; G.orderSeq=0;
   G.served=0; G.lost=0; G.burns=0;
   G.over=false; G.raidObj=null;
   G.woks=[mkWok('wok0'),mkWok('wok1')];
@@ -992,7 +998,7 @@ function buildDay(){
   const now=performance.now();
   G.nextSpawn=now+800;
   G.nextRaid=D.raid?now+D.raid:Infinity;
-  G.streak=0; G.maxStreak=0; G.lastServe=0;
+  G.streak=0; G.maxStreak=0; G.lastServe=0; G.perfects=0;
   G.rushState=0; G.rushAt=now+D.time*1000*0.42; G.rushUntil=0;
   $('rushbanner').classList.remove('on');
   G.loop=setInterval(tick,100);
@@ -1143,16 +1149,38 @@ function spawnOrder(){
 }
 function serveOrder(o){
   if(G.over)return;
-  if(!G.hand||G.hand.kind!=='dish'){ shake(o.el); toast('先做好菜拿在手上，再来交单'); return; }
-  if(!o.keys.includes(G.hand.id)){ shake(o.el); sfx.wrong(); toast('客人点的不是这道菜！'); return; }
+  if(handDishIdxFor(o.keys)<0){
+    if(handItems().some(h=>h.kind==='dish')){ shake(o.el); sfx.wrong(); toast('客人点的不是这道菜！'); }
+    else { shake(o.el); toast('先做好菜放托盘上，再来交单'); }
+    return;
+  }
   goDo($('serve'),()=>doServe(o));
 }
 function serveAtWindow(){
-  if(!G.hand||G.hand.kind!=='dish'){ shake($('serve')); toast('手上没有做好的菜'); return; }
+  if(!handItems().some(h=>h.kind==='dish')){ shake($('serve')); toast('托盘上没有做好的菜'); return; }
   // 自动交给等得最久的同菜客人
-  const o=G.orders.find(x=>x.keys.includes(G.hand.id));
+  const o=G.orders.find(x=>handDishIdxFor(x.keys)>=0);
   if(!o){ shake($('serve')); sfx.wrong(); toast('没有客人点这道菜……先别做多'); return; }
   doServe(o);
+}
+function coinFly(rect){
+  const target=$('hud-cash').getBoundingClientRect();
+  for(let i=0;i<3;i++){
+    const c=document.createElement('img');
+    c.src=A+'emo_coin.png'; c.className='coinfly';
+    c.style.left=(rect.left+rect.width/2-11)+'px';
+    c.style.top=(rect.top+20)+'px';
+    document.body.appendChild(c);
+    setTimeout(()=>{
+      c.style.left=(target.left+target.width/2-11)+'px';
+      c.style.top=(target.top+4)+'px';
+      c.style.transform='scale(.45)'; c.style.opacity='.85';
+    },40+i*90);
+    setTimeout(()=>{
+      c.remove();
+      if(i===2)$('hud-cash').animate([{transform:'scale(1)'},{transform:'scale(1.28)'},{transform:'scale(1)'}],{duration:220});
+    },540+i*90);
+  }
 }
 function bumpStreak(rect){
   const now=performance.now();
@@ -1170,11 +1198,11 @@ function bumpStreak(rect){
 function doServe(o){
   if(G.over)return;
   if(!G.orders.includes(o)){ toast('😡 客人刚走……手再快点！','warn'); return; }
-  if(!G.hand||G.hand.kind!=='dish'||!o.keys.includes(G.hand.id))return;
-  const dish=G.hand.id;
+  const hi=handDishIdxFor(o.keys); if(hi<0)return;
+  const dish=G.hands[hi].id;
   const rect=o.el.getBoundingClientRect();
   o.keys.splice(o.keys.indexOf(dish),1);
-  G.hand=null; renderHand();
+  handRemoveAt(hi); renderHand();
   G.served++;
   if(o.keys.length){
     // 套餐先交一道
@@ -1191,6 +1219,7 @@ function doServe(o){
     scorePop(rect.left+rect.width/2-30,rect.top-6,`<img src="${A}emo_heart.png">`,true);
     removeOrder(o);
     sfx.serve(); sfx.coin();
+    if(!reduceMotion)coinFly(rect);
   }
   bumpStreak(rect);
   updateChefImg('chef_cheer');
@@ -1217,14 +1246,18 @@ function updateChefImg(pose){
   const img=$('chef-img');
   if(pose){ img.src=A+pose+'.png'; return; }
   if($('chef').classList.contains('walking')) img.src=A+'chef_run.png';
-  else if(G.hand) img.src=A+'chef_carry.png';
+  else if(handItems().length) img.src=A+'chef_carry.png';
   else img.src=A+'chef_idle.png';
 }
+function handItems(){ return G.hands.filter(Boolean); }
+function handAdd(item){ const i=G.hands.findIndex(h=>!h); if(i<0)return false; G.hands[i]=item; return true; }
+function handRemoveAt(i){ G.hands[i]=null; }
+function handDishIdxFor(keys){ return G.hands.findIndex(h=>h&&h.kind==='dish'&&keys.includes(h.id)); }
 function renderHand(){
   const chef=$('chef');
-  if(G.hand){
-    const def=G.hand.kind==='dish'?RECIPES[G.hand.id]:INGS[G.hand.id];
-    chef.querySelector('.hold').innerHTML=icon(def,22);
+  const items=handItems();
+  if(items.length){
+    chef.querySelector('.hold').innerHTML=items.map(h=>icon(h.kind==='dish'?RECIPES[h.id]:INGS[h.id],20)).join('');
     chef.classList.add('has');
   }else{
     chef.classList.remove('has');
@@ -1233,8 +1266,7 @@ function renderHand(){
 }
 function takeIng(id,el){
   if(G.over)return;
-  if(G.hand){ shake(el); toast('手上已经有东西了！先放下或去垃圾桶丢掉'); return; }
-  G.hand={kind:'ing',id};
+  if(!handAdd({kind:'ing',id})){ shake(el); toast('托盘满了（只有两格）！先用掉或去垃圾桶丢掉'); return; }
   sfx.pick();
   flyFromTo(el.getBoundingClientRect(),$('chef').getBoundingClientRect(),icon(INGS[id],36));
   setTimeout(renderHand,220);
@@ -1278,11 +1310,17 @@ function wokTap(w,e){
     const now=performance.now(),r=w.recipe,cms=cookMsOf(r);
     if(now-w.t0>=cms&&now-w.t0<cms+winMsOf(r)){
       // 完美出锅
-      if(G.hand){ shake(w.el); toast('手上有东西，腾不出手出锅！'); return; }
-      G.hand={kind:'dish',id:w.recipeKey};
+      const dishKey=w.recipeKey;
+      if(!handAdd({kind:'dish',id:dishKey})){ shake(w.el); toast('托盘满了，腾不出位置出锅！'); return; }
+      if(now-w.t0<cms+winMsOf(r)*0.45){
+        G.cash+=8; updCash(); G.perfects++;
+        const rc=w.el.getBoundingClientRect();
+        scorePop(rc.left+rc.width/2,rc.top-4,`<img src="${A}emo_star.png"> 完美出锅 +¥8`,true);
+        tone(1500,.12,'sine',.12);
+      }
       w.state='idle'; w.contents=[]; w.recipe=null;
       w.el.classList.remove('ready','cooking');
-      flyFromTo(w.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),icon(RECIPES[G.hand.id],36));
+      flyFromTo(w.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),icon(RECIPES[dishKey],36));
       renderWok(w);
       setTimeout(renderHand,220);
       sfx.place();
@@ -1291,21 +1329,31 @@ function wokTap(w,e){
     }
     return;
   }
-  // idle：放食材
-  if(!G.hand||G.hand.kind!=='ing'){ if(G.hand)shake(w.el); return; }
-  const id=G.hand.id;
-  if(INGS[id].chopTo){ shake(w.el); sfx.wrong(); toast(`「${INGS[id].name}」要先在案板切好！`); return; }
+  // idle：从托盘里挑一件能和锅里配成菜的
   const D=DAYS[G.day];
-  const tryContents=[...w.contents,id];
-  const fits=D.dishes.some(k=>{
-    const r=RECIPES[k];
-    if(r.type!=='wok')return false;
-    const pool=[...r.needs];
-    return tryContents.every(c=>{const i=pool.indexOf(c);if(i<0)return false;pool.splice(i,1);return true;});
-  });
-  if(!fits){ shake(w.el); sfx.wrong(); toast('这个组合炒不出菜！'); return; }
-  w.contents=tryContents;
-  G.hand=null; renderHand();
+  const ingIdxs=G.hands.map((h,i)=>h&&h.kind==='ing'?i:-1).filter(i=>i>=0);
+  if(!ingIdxs.length){ if(handItems().length)shake(w.el); return; }
+  let pick=-1;
+  for(const i of ingIdxs){
+    const cid=G.hands[i].id;
+    if(INGS[cid].chopTo)continue;
+    const tryC=[...w.contents,cid];
+    const ok=D.dishes.some(k=>{
+      const r2=RECIPES[k];
+      if(r2.type!=='wok')return false;
+      const pool=[...r2.needs];
+      return tryC.every(c=>{const j=pool.indexOf(c);if(j<0)return false;pool.splice(j,1);return true;});
+    });
+    if(ok){pick=i;break;}
+  }
+  if(pick<0){
+    if(ingIdxs.some(i=>INGS[G.hands[i].id].chopTo)){ shake(w.el); sfx.wrong(); toast('生的🎋🐟要先去案板切好！'); return; }
+    shake(w.el); sfx.wrong(); toast('托盘上的食材和锅里配不成菜！'); return;
+  }
+  const id=G.hands[pick].id;
+  handRemoveAt(pick);
+  w.contents=[...w.contents,id];
+  renderHand();
   sfx.place();
   // 配方凑齐→开炒
   const done=D.dishes.find(k=>{
@@ -1343,11 +1391,13 @@ function renderWok(w){
 function boardTap(e){
   const b=G.board;
   if(b.state==='empty'){
-    if(!G.hand||G.hand.kind!=='ing'){ return; }
-    const ing=INGS[G.hand.id];
-    if(!ing.chopTo){ shake(b.el); sfx.wrong(); toast(`「${ing.name}」不用切，直接下锅！`); return; }
-    b.state='chopping'; b.ing=G.hand.id; b.hits=0;
-    G.hand=null; renderHand();
+    const ci=G.hands.findIndex(h=>h&&h.kind==='ing'&&INGS[h.id].chopTo);
+    if(ci<0){
+      if(handItems().some(h=>h.kind==='ing')){ shake(b.el); sfx.wrong(); toast('托盘上的食材不用切，直接下锅！'); }
+      return;
+    }
+    b.state='chopping'; b.ing=G.hands[ci].id; b.hits=0;
+    handRemoveAt(ci); renderHand();
     sfx.place();
     renderBoard();
   }else if(b.state==='chopping'){
@@ -1361,8 +1411,7 @@ function boardTap(e){
       renderBoard();
     }
   }else if(b.state==='done'){
-    if(G.hand){ shake(b.el); toast('手上有东西，先放下！'); return; }
-    G.hand={kind:'ing',id:INGS[b.ing].chopTo};
+    if(!handAdd({kind:'ing',id:INGS[b.ing].chopTo})){ shake(b.el); toast('托盘满了，先腾个位置！'); return; }
     flyFromTo(b.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),icon(INGS[INGS[b.ing].chopTo],36));
     b.state='empty'; b.ing=null; b.hits=0;
     renderBoard();
@@ -1388,8 +1437,7 @@ function machineTap(e){
     m.el.querySelector('.st-hint').textContent='制作中…';
     sfx.place();
   }else if(m.state==='ready'){
-    if(G.hand){ shake(m.el); toast('手上有东西，先放下！'); return; }
-    G.hand={kind:'dish',id:'milktea'};
+    if(!handAdd({kind:'dish',id:'milktea'})){ shake(m.el); toast('托盘满了，先腾个位置！'); return; }
     flyFromTo(m.el.getBoundingClientRect(),$('chef').getBoundingClientRect(),icon(RECIPES.milktea,36));
     m.state='idle';
     m.el.classList.remove('ready');
@@ -1485,7 +1533,7 @@ function endDay(){
     `<div class="rrow"><span>成功上菜</span><b>${G.served} 单</b></div>`+
     `<div class="rrow ${G.lost?'miss':''}"><span>流失客人 ${G.lost?'（0 流失拿星）':'✓'}</span><b>${G.lost} 人</b></div>`+
     `<div class="rrow ${G.burns?'miss':''}"><span>烧焦次数 ${G.burns?'（0 烧焦拿星）':'✓'}</span><b>${G.burns} 次</b></div>`+
-    `<div class="rrow"><span>最高连击</span><b>×${G.maxStreak}</b></div>`+
+    `<div class="rrow"><span>最高连击 / 完美出锅</span><b>×${G.maxStreak} / ${G.perfects}次</b></div>`+
     (pass&&G.cash>D.goal?`<div class="rrow"><span>超额营业 → 零花钱</span><b>+¥${G.cash-D.goal}</b></div>`:'');
   $('res-roof').style.width=Math.min(100,G.totalCash/800*100)+'%';
   $('res-rooftxt').textContent=`¥${G.totalCash}/800`;
@@ -1533,8 +1581,9 @@ $('serve').addEventListener('pointerdown',e=>{e.preventDefault();ac();goDo($('se
 $('trash').addEventListener('pointerdown',e=>{
   e.preventDefault(); ac();
   goDo($('trash'),()=>{
-    if(!G.hand)return;
-    G.hand=null; renderHand();
+    const filled=G.hands.map((h,i)=>h?i:-1).filter(i=>i>=0);
+    if(!filled.length)return;
+    handRemoveAt(filled[filled.length-1]); renderHand();
     tone(300,.12,'sawtooth',.06);
     const c=centerEvt($('trash'));
     scorePop(c.clientX,c.clientY,'已丢弃',true);
